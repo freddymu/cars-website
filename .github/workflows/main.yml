@@ -19,6 +19,12 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}  # Add your Docker Hub username to secrets
           password: ${{ secrets.DOCKER_PASSWORD }}  # Add your Docker Hub password to secrets
 
+      - name: Set up JDK 21
+        uses: actions/setup-java@v2
+        with:
+          java-version: '21'
+          distribution: 'graalvm'          
+
       - name: Build with Maven
         run: ./mvnw package -Dnative        
 
