@@ -1,0 +1,38 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main  # Adjust this as necessary for your main branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}  # Add your Docker Hub username to secrets
+          password: ${{ secrets.DOCKER_PASSWORD }}  # Add your Docker Hub password to secrets
+
+      - name: Build with Maven
+        run: ./mvnw package -Dnative        
+
+      - name: Build the Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./src/main/docker/Dockerfile.native-micro
+          push: true
+          tags: lifebender/cars-website:latest
+          platforms: linux/amd64
+          build-args: |
+            ENV=production
+            QUARKUS_DB_USERNAME=${{ secrets.QUARKUS_DB_USERNAME }}
+            QUARKUS_DB_PASSWORD=${{ secrets.QUARKUS_DB_PASSWORD }}
+            QUARKUS_DB_URL=${{ secrets.QUARKUS_DB_URL }}
+            QUARKUS_DB_URL_JDBC=${{ secrets.QUARKUS_DB_URL_JDBC }}
