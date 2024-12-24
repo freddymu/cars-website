@@ -3,6 +3,6 @@ package com.pstag;
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 
 @QuarkusIntegrationTest
-class GreetingResourceIT extends GreetingResourceTest {
+class CarResourceIT extends CarResourceTest {
     // Execute the same tests but in packaged mode.
 }
