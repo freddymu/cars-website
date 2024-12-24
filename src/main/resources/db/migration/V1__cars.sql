@@ -1,35 +1,52 @@
 -- Assume this is a denormalization of the car table with purpose for better searching performance
--- The real table should be normalized such as the make, model, fuelType, transmission, etc. should be in a separate table
+-- The real table should be normalized such as the make, model, fuel_type, transmission, etc. should be in a separate table
 CREATE TABLE cars (
     id SERIAL,
     make VARCHAR(256) NOT NULL,
     model VARCHAR(256) NOT NULL,
-    trimYear INT NOT NULL,
-    trimName VARCHAR(256) NOT NULL,
-    trimDescription TEXT NOT NULL,
-    fuelType VARCHAR(128) NOT NULL,
+    trim_year INT NOT NULL,
+    trim_name VARCHAR(256) NOT NULL,
+    trim_description TEXT NOT NULL,
+    fuel_type VARCHAR(128) NOT NULL,
     transmission VARCHAR(128) NOT NULL,
-    bodyType VARCHAR(255) NOT NULL,
+    body_type VARCHAR(255) NOT NULL,
     color VARCHAR(32)[],
     length DOUBLE PRECISION NOT NULL,
     weight DOUBLE PRECISION NOT NULL,
     velocity DOUBLE PRECISION,
-    imageUrl VARCHAR(256)[],
-    PRIMARY KEY (id, trimYear) -- Composite primary key
-) PARTITION BY LIST (trimYear);
+    image_url VARCHAR(256)[],
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    PRIMARY KEY (id, trim_year) -- Composite primary key
+) PARTITION BY LIST (trim_year);
 
 -- Create indexes
 CREATE INDEX idx_make ON cars (make);
 CREATE INDEX idx_model ON cars (model);
-CREATE INDEX idx_trimYear ON cars (trimYear);
-CREATE INDEX idx_fuelType ON cars (fuelType);
+CREATE INDEX idx_trim_year ON cars (trim_year);
+CREATE INDEX idx_fuel_type ON cars (fuel_type);
 CREATE INDEX idx_transmission ON cars (transmission);
-CREATE INDEX idx_bodyType ON cars (bodyType);
+CREATE INDEX idx_bodyType ON cars (body_type);
+
+-- Function to update updated_at column
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+   NEW.updated_at = NOW();
+   RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger to update updated_at on row update
+CREATE TRIGGER update_timestamp
+BEFORE UPDATE ON cars
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
 
 -- Full-text search index
-CREATE INDEX idx_trimDescription_fulltext ON cars USING gin(to_tsvector('english', trimDescription));
+CREATE INDEX idx_trim_description_fulltext ON cars USING gin(to_tsvector('english', trim_description));
 
--- Partitioning by trimYear
+-- Partitioning by trim_year
 CREATE TABLE cars_2014 PARTITION OF cars FOR VALUES IN (2014);
 CREATE TABLE cars_2015 PARTITION OF cars FOR VALUES IN (2015);
 CREATE TABLE cars_2016 PARTITION OF cars FOR VALUES IN (2016);
@@ -41,7 +58,7 @@ CREATE TABLE cars_2021 PARTITION OF cars FOR VALUES IN (2021);
 -- Add more partitions as needed
 
 -- Data sample based on https://carapi.app/features/vehicle-csv-download
-INSERT INTO cars (make, model, trimYear, trimName, trimDescription, fuelType, transmission, bodyType, length, weight)
+INSERT INTO cars (make, model, trim_year, trim_name, trim_description, fuel_type, transmission, body_type, length, weight)
 VALUES 
     ('Acura', 'ILX', '2020', $$Premium and A-SPEC Packages$$, $$Premium and A-SPEC Packages 4dr Sedan (2.4L 4cyl 8AM)$$, 'gas', '8-speed automated manual','Sedan',  182.2,3144),
     ('Acura', 'ILX', '2020', $$Premium Package$$, $$Premium Package 4dr Sedan (2.4L 4cyl 8AM)$$, 'gas', '8-speed automated manual','Sedan',  182.2,3122),
@@ -15732,4 +15749,4 @@ VALUES
     ('Volvo', 'XC70', '2015', $$T6$$, $$T6 4dr Wagon AWD (3.0L 6cyl Turbo 6A)$$, 'gas', '6-speed shiftable automatic','Wagon',  190.5,4008),
     ('Volvo', 'XC70', '2015', $$T6$$, $$T6 4dr Wagon AWD w/Prod. End 5/14 (3.0L 6cyl Turbo 6A)$$, 'gas', '6-speed shiftable automatic','Wagon',  190.5,4153)
 
---ON CONFLICT (make, model, trimYear, trimName, trimDescription) DO NOTHING;
+--ON CONFLICT (make, model, trim_year, trim_name, trim_description) DO NOTHING;

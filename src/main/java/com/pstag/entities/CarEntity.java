@@ -1,4 +1,4 @@
-package com.pstag.reactive.crud;
+package com.pstag.entities;
 
 import java.util.Objects;
 import java.util.List;
@@ -8,8 +8,9 @@ import io.vertx.mutiny.pgclient.PgPool;
 import io.vertx.mutiny.sqlclient.Row;
 import io.vertx.mutiny.sqlclient.RowSet;
 import io.vertx.mutiny.sqlclient.Tuple;
+import java.util.Arrays;
 
-public class Car {
+public class CarEntity {
     private Long id;
     private String make;
     private String model;
@@ -26,7 +27,7 @@ public class Car {
     private List<String> imageUrl;
 
     // Constructor
-    private Car(Builder builder) {
+    private CarEntity(Builder builder) {
         this.id = builder.id;
         this.make = builder.make;
         this.model = builder.model;
@@ -130,8 +131,8 @@ public class Car {
             return this;
         }
 
-        public Car build() {
-            return new Car(this);
+        public CarEntity build() {
+            return new CarEntity(this);
         }
     }
 
@@ -191,4 +192,37 @@ public class Car {
     public List<String> getImageUrl() {
         return imageUrl;
     }
+
+    public static Object parse(String fieldName, String value) {
+        switch (fieldName) {
+            case "id":
+                return Long.parseLong(value);
+            case "trim_year":
+                return Integer.parseInt(value);
+            case "length", "weight", "velocity":
+                return Double.parseDouble(value);
+            case "color", "image_url":
+                return Arrays.asList(value.split(","));
+            default:
+                return value;
+        }
+    }
+
+    public static Object[] parse(String fieldName, String[] value) {
+        
+        switch (fieldName) {
+            case "id":
+                return Arrays.stream(value).map(Long::parseLong).toArray();
+            case "trim_year":
+                return Arrays.stream(value).map(Integer::parseInt).toArray();
+            case "length", "weight", "velocity":
+                return Arrays.stream(value).map(Double::parseDouble).toArray();
+            case "color", "image_url":
+                return Arrays.stream(value).map(val -> Arrays.asList(val.split(","))).toArray();
+            default:
+                return value;
+        }
+
+    }
+
 }
