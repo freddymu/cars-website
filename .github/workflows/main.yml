@@ -26,7 +26,12 @@ jobs:
           distribution: 'temurin'
   
       - name: Build with Maven
-        run: ./mvnw package -Dnative        
+        run: ./mvnw package -Dnative
+        env:
+          QUARKUS_DB_USERNAME: ${{ secrets.QUARKUS_DB_USERNAME }}
+          QUARKUS_DB_PASSWORD: ${{ secrets.QUARKUS_DB_PASSWORD }}
+          QUARKUS_DB_URL: ${{ secrets.QUARKUS_DB_URL }}
+          QUARKUS_DB_URL_JDBC: ${{ secrets.QUARKUS_DB_URL_JDBC }}      
 
       - name: Build the Docker image
         uses: docker/build-push-action@v4
