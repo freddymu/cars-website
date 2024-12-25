@@ -1,13 +1,6 @@
 package com.pstag.entities;
 
-import java.util.Objects;
 import java.util.List;
-import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.Uni;
-import io.vertx.mutiny.pgclient.PgPool;
-import io.vertx.mutiny.sqlclient.Row;
-import io.vertx.mutiny.sqlclient.RowSet;
-import io.vertx.mutiny.sqlclient.Tuple;
 import java.util.Arrays;
 
 public class CarEntity {
@@ -25,6 +18,19 @@ public class CarEntity {
     private double weight;
     private double velocity;
     private List<String> imageUrl;
+    private List<ExteriorColor> exteriorColors;
+
+    public CarEntity() {
+        // Default constructor for Jackson
+    }
+
+    public List<ExteriorColor> getExteriorColors() {
+        return exteriorColors;
+    }
+
+    public void setExteriorColors(List<ExteriorColor> exteriorColors) {
+        this.exteriorColors = exteriorColors;
+    }
 
     // Constructor
     private CarEntity(Builder builder) {
@@ -209,7 +215,7 @@ public class CarEntity {
     }
 
     public static Object[] parse(String fieldName, String[] value) {
-        
+
         switch (fieldName) {
             case "id":
                 return Arrays.stream(value).map(Long::parseLong).toArray();
@@ -223,6 +229,26 @@ public class CarEntity {
                 return value;
         }
 
+    }
+
+    @Override
+    public String toString() {
+        return "CarEntity{" +
+                "id=" + id +
+                ", make='" + make + '\'' +
+                ", model='" + model + '\'' +
+                ", trimYear=" + trimYear +
+                ", trimName='" + trimName + '\'' +
+                ",trimDescription='" + trimDescription + '\'' +
+                ", fuelType='" + fuelType + '\'' +
+                ", transmission='" + transmission + '\'' +
+                ", bodyType='" + bodyType + '\'' +
+                ", color=" + color +
+                ", length=" + length +
+                ", weight=" + weight +
+                ", velocity=" + velocity +
+                ", imageUrl=" + imageUrl +
+                '}';
     }
 
 }

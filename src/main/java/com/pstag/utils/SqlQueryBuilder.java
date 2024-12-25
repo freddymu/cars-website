@@ -54,15 +54,19 @@ public class SqlQueryBuilder {
      * @return The builder instance.
      */
     public SqlQueryBuilder where(String clause, Object... params) {
-        if (!clause.contains("$")) {
+        if (!clause.contains("$") && !clause.contains("IS NULL")) {
             throw new IllegalArgumentException(
                     "WHERE clause must contain at least one parameter placeholder '$': " + clause);
         }
-        if (params.length == 1) {
-            clause = clause.replace("$", "$" + paramIndex++);
-        } else {
-            for (Object param : params) {
-                clause = clause.replaceFirst(" \\$ ", " \\$" + paramIndex++ + " ");
+
+        if (!clause.contains("IS NULL")) {
+
+            if (params.length == 1) {
+                clause = clause.replace("$", "$" + paramIndex++);
+            } else {
+                for (Object param : params) {
+                    clause = clause.replaceFirst(" \\$ ", " \\$" + paramIndex++ + " ");
+                }
             }
         }
         this.whereClauses.add(clause);
