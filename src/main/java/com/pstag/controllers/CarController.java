@@ -7,11 +7,13 @@ import java.util.Map;
 
 import com.pstag.entities.CarEntity;
 import com.pstag.services.CarService;
+import com.pstag.utils.GenericResponse;
 import com.pstag.utils.TotalRowsAndData;
 
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -66,5 +68,11 @@ public class CarController {
     public Response getXml() {
         String xml = service.getXml();
         return Response.ok(xml).header("Content-Disposition", "attachment; filename=\"cars.xml\"").build();
+    }
+
+    @PATCH
+    @Path("/fill-missing-data")
+    public GenericResponse<String> fillMissingData() {
+        return service.fillMissingData(client);
     }
 }

@@ -1,5 +1,7 @@
 package com.pstag.repositories;
 
+import io.quarkus.logging.Log;
+
 import com.pstag.entities.CarEntity;
 import java.util.Arrays;
 
@@ -39,8 +41,8 @@ public class CarRepository {
         Query queryBuilderWithoutPagination = queryBuilder.count();
 
         // print query
-        System.out.println(queryBuilderWithoutPagination.getSql());
-        System.out.println(queryBuilderWithoutPagination.getParameters());
+        Log.info(queryBuilderWithoutPagination.getSql());
+        Log.info(queryBuilderWithoutPagination.getParameters());
 
         Uni<Integer> totalRowsUni = client.preparedQuery(queryBuilderWithoutPagination.getSql())
                 .execute(Tuple.from(queryBuilderWithoutPagination.getParameters()))
@@ -63,8 +65,8 @@ public class CarRepository {
 
         // print query
         Query query = queryBuilder.build();
-        System.out.println(query.getSql());
-        System.out.println(query.getParameters());
+        Log.info(query.getSql());
+        Log.info(query.getParameters());
 
         Uni<List<CarEntity>> dataUni = client.preparedQuery(query.getSql())
                 .execute(Tuple.from(query.getParameters()))
@@ -82,15 +84,28 @@ public class CarRepository {
         return null;
     }
 
+    public static CarEntity updateCar(PgPool client, Long id, List<String> colors, Double velocity) {
+
+        List<CarEntity> result = client
+                .preparedQuery("UPDATE cars SET color = $1, velocity = $2 WHERE id = $3 RETURNING *")
+                .execute(Tuple.of(colors.toArray(new String[0]), velocity, id))
+                .onItem().transformToMulti(set -> Multi.createFrom().iterable(set))
+                .onItem().transform(CarRepository::from)
+                .collect().asList()
+                .await().indefinitely();
+
+        return result.get(0);
+    }
+
     private static void applyFilters(SqlQueryBuilder queryBuilder, Map<String, String> filters) {
         if (filters != null && !filters.isEmpty()) {
             for (Map.Entry<String, String> entry : filters.entrySet()) {
                 String snakeCaseKey = entry.getKey().replaceAll("([a-z])([A-Z]+)", "$1_$2").toLowerCase();
                 String originalValue = entry.getValue();
 
-                if (originalValue.toLowerCase().contains("between")) {
+                if (originalValue != null && originalValue.toLowerCase().contains("between")) {
                     handleBetweenFilter(queryBuilder, snakeCaseKey, originalValue);
-                } else if (originalValue.toLowerCase().contains("in")) {
+                } else if (originalValue != null && originalValue.toLowerCase().contains("in")) {
                     handleInFilter(queryBuilder, snakeCaseKey, originalValue);
                 } else {
                     handleDefaultFilter(queryBuilder, snakeCaseKey, originalValue);
@@ -125,9 +140,13 @@ public class CarRepository {
     }
 
     private static void handleDefaultFilter(SqlQueryBuilder queryBuilder, String snakeCaseKey, String originalValue) {
-        Object value = CarEntity.parse(snakeCaseKey, originalValue);
-        String operator = (value instanceof String) ? "ILIKE" : "=";
-        queryBuilder.where(String.format("%s %s $ ", snakeCaseKey, operator), value);
+        if (originalValue != null) {
+            Object value = CarEntity.parse(snakeCaseKey, originalValue);
+            String operator = (value instanceof String) ? "ILIKE" : "=";
+            queryBuilder.where(String.format("%s %s $ ", snakeCaseKey, operator), value);
+        } else {
+            queryBuilder.where(String.format("%s IS NULL", snakeCaseKey));
+        }
     }
 
     private static void applySearch(SqlQueryBuilder queryBuilder, String search) {
@@ -164,14 +183,14 @@ public class CarRepository {
                 .fuelType(row.getString("fuel_type"))
                 .transmission(row.getString("transmission"))
                 .bodyType(row.getString("body_type"))
-                .color(row.getJsonArray("color") != null
-                        ? row.getJsonArray("color").stream().map(Object::toString).toList()
+                .color(row.getArrayOfStrings("color") != null
+                        ? Arrays.asList(row.getArrayOfStrings("color"))
                         : null)
                 .length(row.getDouble("length") != null ? row.getDouble("length") : 0.0)
                 .weight(row.getDouble("weight") != null ? row.getDouble("weight") : 0.0)
                 .velocity(row.getDouble("velocity") != null ? row.getDouble("velocity") : 0.0)
-                .imageUrl(row.getJsonArray("image_url") != null
-                        ? row.getJsonArray("image_url").stream().map(Object::toString).toList()
+                .imageUrl(row.getArrayOfStrings("image_url") != null
+                        ? Arrays.asList(row.getArrayOfStrings("image_url"))
                         : null)
                 .build();
     }
