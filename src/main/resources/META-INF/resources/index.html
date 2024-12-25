@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,12 +23,22 @@
     </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
         body {
             font-family: 'Inter', sans-serif;
+        }
+
+        .carousel-item {
+            display: none;
+        }
+
+        .carousel-item:first-child {
+            display: block;
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
+
 <body class="bg-gray-100 text-soft-black">
     <header class="bg-soft-black text-white py-4">
         <div class="container mx-auto px-4 flex items-center justify-between">
@@ -43,7 +54,8 @@
 
     <div class="container mx-auto p-4 flex flex-col md:flex-row">
         <!-- Left Sidebar -->
-        <div id="sidebar" class="w-full md:w-1/4 pr-0 md:pr-4 mb-4 md:mb-0 hidden md:block fixed md:static inset-0 bg-white md:bg-transparent z-50 overflow-y-auto md:overflow-visible">
+        <div id="sidebar"
+            class="w-full md:w-1/4 pr-0 md:pr-4 mb-4 md:mb-0 hidden md:block fixed md:static inset-0 bg-white md:bg-transparent z-50 overflow-y-auto md:overflow-visible">
             <div class="p-4 md:p-0">
                 <div class="flex justify-between items-center md:hidden mb-4">
                     <h2 class="text-lg font-semibold">Filters</h2>
@@ -51,7 +63,8 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
-                <input type="text" id="search" placeholder="Search cars..." class="w-full p-2 mb-4 border border-gray-300 rounded">
+                <input type="text" id="search" placeholder="Search cars..."
+                    class="w-full p-2 mb-4 border border-gray-300 rounded">
                 <div class="space-y-4">
                     <div>
                         <label class="block mb-2 font-semibold text-sm">Make</label>
@@ -68,8 +81,10 @@
                     <div>
                         <label class="block mb-2 font-semibold text-sm">Year</label>
                         <div class="flex space-x-2">
-                            <input type="number" id="trimYearMin" placeholder="Min" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
-                            <input type="number" id="trimYearMax" placeholder="Max" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                            <input type="number" id="trimYearMin" placeholder="Min"
+                                class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                            <input type="number" id="trimYearMax" placeholder="Max"
+                                class="w-1/2 p-2 border border-gray-300 rounded text-sm">
                         </div>
                     </div>
                     <div>
@@ -93,35 +108,42 @@
                     <div>
                         <label class="block mb-2 font-semibold text-sm">Length (inches)</label>
                         <div class="flex space-x-2">
-                            <input type="number" id="lengthMin" placeholder="Min" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
-                            <input type="number" id="lengthMax" placeholder="Max" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                            <input type="number" id="lengthMin" placeholder="Min"
+                                class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                            <input type="number" id="lengthMax" placeholder="Max"
+                                class="w-1/2 p-2 border border-gray-300 rounded text-sm">
                         </div>
                     </div>
                     <div>
                         <label class="block mb-2 font-semibold text-sm">Weight (lbs)</label>
                         <div class="flex space-x-2">
-                            <input type="number" id="weightMin" placeholder="Min" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
-                            <input type="number" id="weightMax" placeholder="Max" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                            <input type="number" id="weightMin" placeholder="Min"
+                                class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                            <input type="number" id="weightMax" placeholder="Max"
+                                class="w-1/2 p-2 border border-gray-300 rounded text-sm">
                         </div>
                     </div>
                     <div>
                         <label class="block mb-2 font-semibold text-sm">Velocity (kph)</label>
                         <div class="flex space-x-2">
-                            <input type="number" id="velocityMin" placeholder="Min" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
-                            <input type="number" id="velocityMax" placeholder="Max" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                            <input type="number" id="velocityMin" placeholder="Min"
+                                class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                            <input type="number" id="velocityMax" placeholder="Max"
+                                class="w-1/2 p-2 border border-gray-300 rounded text-sm">
                         </div>
                     </div>
                     <div>
                         <label class="block mb-2 font-semibold text-sm">Colors</label>
                         <div id="colorFilters" class="flex flex-wrap gap-2"></div>
                     </div>
-                    <button id="resetFilters" class="w-full bg-soft-black text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors text-sm">
+                    <button id="resetFilters"
+                        class="w-full bg-soft-black text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors text-sm">
                         Reset Filters
                     </button>
                 </div>
             </div>
         </div>
-        
+
         <!-- Workspace -->
         <div class="w-full md:w-3/4 pl-0 md:pl-4">
             <div class="flex justify-between items-center mb-4">
@@ -140,7 +162,8 @@
                         <option value="weight,desc">Weight (Heaviest)</option>
                     </select>
                 </div>
-                <button id="downloadXML" class="bg-soft-red text-white px-4 py-2 rounded hover:bg-red-600 transition-colors text-sm">
+                <button id="downloadXML"
+                    class="bg-soft-red text-white px-4 py-2 rounded hover:bg-red-600 transition-colors text-sm">
                     Download XML
                 </button>
             </div>
@@ -151,15 +174,68 @@
                 <p class="text-gray-600">Try adjusting your search or filter to find what you're looking for.</p>
             </div>
             <div class="mt-4 flex justify-center">
-                <button id="prevPage" class="bg-soft-black text-white px-4 py-2 rounded mr-2 hover:bg-gray-700 transition-colors text-sm">Previous</button>
+                <button id="prevPage"
+                    class="bg-soft-black text-white px-4 py-2 rounded mr-2 hover:bg-gray-700 transition-colors text-sm">Previous</button>
                 <span id="pageInfo" class="px-4 py-2 text-sm"></span>
-                <button id="nextPage" class="bg-soft-black text-white px-4 py-2 rounded ml-2 hover:bg-gray-700 transition-colors text-sm">Next</button>
+                <button id="nextPage"
+                    class="bg-soft-black text-white px-4 py-2 rounded ml-2 hover:bg-gray-700 transition-colors text-sm">Next</button>
             </div>
         </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="script.js"></script>
-</body>
-</html>
+    <script>
+        $(document).ready(function () {
+            function initializeCarousel($carousel) {
+                const $slides = $carousel.find('.carousel-item');
+                let currentSlide = 0;
 
+                function showSlide(index) {
+                    $slides.each(function (i) {
+                        $(this).css('display', i === index ? 'block' : 'none');
+                    });
+                }
+
+                function nextSlide() {
+                    currentSlide = (currentSlide + 1) % $slides.length;
+                    showSlide(currentSlide);
+                }
+
+                function prevSlide() {
+                    currentSlide = (currentSlide - 1 + $slides.length) % $slides.length;
+                    showSlide(currentSlide);
+                }
+
+                $carousel.find('.next').on('click', nextSlide);
+                $carousel.find('.prev').on('click', prevSlide);
+
+                showSlide(currentSlide);
+            }
+
+            // Initialize the carousel for each car card when the DOM is fully loaded
+            // $('.carousel').each(function () {
+            //     initializeCarousel($(this));
+            // });
+
+            // Use MutationObserver to detect when new car cards are added
+            const carList = document.getElementById('carList');
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+
+                    if (mutation.addedNodes.length) {
+
+                        $(mutation.addedNodes).each(function () {
+
+                            initializeCarousel($(this));
+                        });
+                    }
+                });
+            });
+
+            observer.observe(carList, { childList: true });
+        });
+    </script>
+</body>
+
+</html>

@@ -82,11 +82,6 @@ public class CarRepository {
                 .onItem().transform(tuple -> new TotalRowsAndData<>(tuple.getItem1(), tuple.getItem2()));
     }
 
-    public static Multi<CarEntity> getLatestSearchResult() {
-        // Implement the method here
-        return null;
-    }
-
     public static CarEntity updateCar(PgPool client, Long id, List<String> colors, Double velocity) {
 
         List<CarEntity> result = client
@@ -178,6 +173,27 @@ public class CarRepository {
                 });
     }
 
+    public static Uni<CarEntity> getById(PgPool client, Long id) {
+        return client.preparedQuery("SELECT * FROM cars WHERE id = $1")
+                .execute(Tuple.of(id))
+                .onItem()
+                .transformToUni(set -> set.iterator().hasNext() ? Uni.createFrom().item(from(set.iterator().next()))
+                        : Uni.createFrom().nullItem());
+    }
+
+    public static Uni<CarEntity> updateCarColorAndImageUrl(PgPool client, Long id, List<String> colors,
+            List<String> imageUrls) {
+        List<CarEntity> result = client
+                .preparedQuery("UPDATE cars SET color = $1, image_url = $2 WHERE id = $3 RETURNING *")
+                .execute(Tuple.of(colors.toArray(new String[0]), imageUrls.toArray(new String[0]), id))
+                .onItem().transformToMulti(set -> Multi.createFrom().iterable(set))
+                .onItem().transform(CarRepository::from)
+                .collect().asList()
+                .await().indefinitely();
+
+        return Uni.createFrom().item(result.get(0));
+    }
+
     private static void applyFilters(SqlQueryBuilder queryBuilder, Map<String, String> filters) {
         if (filters != null && !filters.isEmpty()) {
             for (Map.Entry<String, String> entry : filters.entrySet()) {
@@ -231,7 +247,8 @@ public class CarRepository {
                             .map(String.class::cast)
                             .map(s -> "'" + s + "'")
                             .toList();
-                    queryBuilder.where(String.format("%s && ARRAY[%s]::VARCHAR[]", snakeCaseKey, String.join(",", stringList)));
+                    queryBuilder.where(
+                            String.format("%s && ARRAY[%s]::VARCHAR[]", snakeCaseKey, String.join(",", stringList)));
                 }
             } else {
                 queryBuilder.where(String.format("%s %s $ ", snakeCaseKey, operator), value);

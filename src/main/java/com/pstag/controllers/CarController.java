@@ -17,6 +17,7 @@ import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.Context;
@@ -92,4 +93,11 @@ public class CarController {
     public Uni<GenericResponse<Map<String, Object>>> getUiParams() {
         return service.getUiParams(client);
     }
+
+    @GET
+    @Path("/image/{id}")
+    public Uni<GenericResponse<Map<String, String>>> getImage(@PathParam("id") Long id) {
+        return service.getImage(client, id);
+    }
+    
 }
