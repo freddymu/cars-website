@@ -54,7 +54,7 @@ public class SqlQueryBuilder {
      * @return The builder instance.
      */
     public SqlQueryBuilder where(String clause, Object... params) {
-        if (!clause.contains("$") && !clause.contains("IS NULL")) {
+        if (!clause.contains("$") && !clause.contains("IS NULL") && !clause.contains("ARRAY[")) {
             throw new IllegalArgumentException(
                     "WHERE clause must contain at least one parameter placeholder '$': " + clause);
         }

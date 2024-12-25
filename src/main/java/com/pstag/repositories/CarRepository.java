@@ -3,6 +3,8 @@ package com.pstag.repositories;
 import io.quarkus.logging.Log;
 
 import com.pstag.entities.CarEntity;
+
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import io.smallrye.mutiny.Multi;
@@ -15,6 +17,7 @@ import com.pstag.utils.SqlQueryBuilder.Query;
 import com.pstag.utils.TotalRowsAndData;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -97,15 +100,93 @@ public class CarRepository {
         return result.get(0);
     }
 
+    public static Uni<List<String>> getMakers(PgPool client) {
+        return client.query("SELECT make FROM cars GROUP BY make ORDER BY make")
+                .execute()
+                .onItem().transform(rows -> {
+                    List<String> bodyTypes = new ArrayList<>();
+                    for (Row row : rows) {
+                        bodyTypes.add(row.getString("make"));
+                    }
+                    return bodyTypes;
+                });
+    }
+
+    public static Uni<Map<String, List<String>>> getMakerAndModel(PgPool client) {
+        return client
+                .query("SELECT make, model FROM cars GROUP BY make, model ORDER BY make, model") // Execute the query
+                .execute() // Get a RowSet<Row>
+                .onItem().transform(rows -> {
+                    Map<String, List<String>> result = new HashMap<>();
+
+                    for (Row row : rows) { // Use for loop to iterate through rows
+                        String make = row.getString("make");
+                        String model = row.getString("model");
+
+                        // Collect models by make in the map
+                        result.computeIfAbsent(make, k -> new ArrayList<>()).add(model);
+                    }
+                    return result; // Returning the populated map
+                });
+    }
+
+    public static Uni<List<String>> getTransmission(PgPool client) {
+        return client.query("SELECT transmission FROM cars GROUP BY transmission ORDER BY transmission")
+                .execute()
+                .onItem().transform(rows -> {
+                    List<String> transmissions = new ArrayList<>();
+                    for (Row row : rows) {
+                        transmissions.add(row.getString("transmission"));
+                    }
+                    return transmissions;
+                });
+    }
+
+    public static Uni<List<String>> getColors(PgPool client) {
+        return client.query("SELECT color FROM cars WHERE color IS NOT NULL GROUP BY color ORDER BY color")
+                .execute()
+                .onItem().transform(rows -> {
+                    List<String> colors = new ArrayList<>();
+                    for (Row row : rows) {
+                        colors.addAll(Arrays.asList(row.getArrayOfStrings("color")));
+                    }
+                    return colors.stream().distinct().toList();
+                });
+    }
+
+    public static Uni<List<String>> getBodyTypes(PgPool client) {
+        return client.query("SELECT body_type FROM cars GROUP BY body_type ORDER BY body_type")
+                .execute()
+                .onItem().transform(rows -> {
+                    List<String> bodyTypes = new ArrayList<>();
+                    for (Row row : rows) {
+                        bodyTypes.add(row.getString("body_type"));
+                    }
+                    return bodyTypes;
+                });
+    }
+
+    public static Uni<List<String>> getFuelTypes(PgPool client) {
+        return client.query("SELECT fuel_type FROM cars GROUP BY fuel_type ORDER BY fuel_type")
+                .execute()
+                .onItem().transform(rows -> {
+                    List<String> fuelTypes = new ArrayList<>();
+                    for (Row row : rows) {
+                        fuelTypes.add(row.getString("fuel_type"));
+                    }
+                    return fuelTypes;
+                });
+    }
+
     private static void applyFilters(SqlQueryBuilder queryBuilder, Map<String, String> filters) {
         if (filters != null && !filters.isEmpty()) {
             for (Map.Entry<String, String> entry : filters.entrySet()) {
                 String snakeCaseKey = entry.getKey().replaceAll("([a-z])([A-Z]+)", "$1_$2").toLowerCase();
                 String originalValue = entry.getValue();
 
-                if (originalValue != null && originalValue.toLowerCase().contains("between")) {
+                if (originalValue != null && originalValue.toLowerCase().contains("between(")) {
                     handleBetweenFilter(queryBuilder, snakeCaseKey, originalValue);
-                } else if (originalValue != null && originalValue.toLowerCase().contains("in")) {
+                } else if (originalValue != null && originalValue.toLowerCase().contains("in(")) {
                     handleInFilter(queryBuilder, snakeCaseKey, originalValue);
                 } else {
                     handleDefaultFilter(queryBuilder, snakeCaseKey, originalValue);
@@ -143,7 +224,18 @@ public class CarRepository {
         if (originalValue != null) {
             Object value = CarEntity.parse(snakeCaseKey, originalValue);
             String operator = (value instanceof String) ? "ILIKE" : "=";
-            queryBuilder.where(String.format("%s %s $ ", snakeCaseKey, operator), value);
+            if (snakeCaseKey.equals("color")) {
+                if (value instanceof List<?>) {
+                    List<String> stringList = ((List<?>) value).stream()
+                            .filter(String.class::isInstance)
+                            .map(String.class::cast)
+                            .map(s -> "'" + s + "'")
+                            .toList();
+                    queryBuilder.where(String.format("%s && ARRAY[%s]::VARCHAR[]", snakeCaseKey, String.join(",", stringList)));
+                }
+            } else {
+                queryBuilder.where(String.format("%s %s $ ", snakeCaseKey, operator), value);
+            }
         } else {
             queryBuilder.where(String.format("%s IS NULL", snakeCaseKey));
         }
