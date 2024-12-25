@@ -152,7 +152,7 @@ public class CarRepository {
     private static void applySearch(SqlQueryBuilder queryBuilder, String search) {
         if (search != null && !search.isEmpty()) {
             queryBuilder.where(
-                    "(make ILIKE $ OR model ILIKE $ OR trim_name ILIKE $ OR trim_description ILIKE $)",
+                    "(fulltext_search ILIKE $)",
                     "%" + search.replace(" ", "%") + "%");
         }
     }

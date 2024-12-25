@@ -15,6 +15,7 @@ CREATE TABLE cars (
     weight DOUBLE PRECISION NOT NULL,
     velocity DOUBLE PRECISION,
     image_url VARCHAR(256)[],
+    fulltext_search TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     PRIMARY KEY (id, trim_year) -- Composite primary key
@@ -45,6 +46,7 @@ EXECUTE FUNCTION update_updated_at_column();
 
 -- Full-text search index
 CREATE INDEX idx_trim_description_fulltext ON cars USING gin(to_tsvector('english', trim_description));
+CREATE INDEX idx_fulltext_search ON cars USING gin(to_tsvector('english', fulltext_search));
 
 -- Partitioning by trim_year
 CREATE TABLE cars_2014 PARTITION OF cars FOR VALUES IN (2014);
@@ -15750,3 +15752,5 @@ VALUES
     ('Volvo', 'XC70', '2015', $$T6$$, $$T6 4dr Wagon AWD w/Prod. End 5/14 (3.0L 6cyl Turbo 6A)$$, 'gas', '6-speed shiftable automatic','Wagon',  190.5,4153)
 
 --ON CONFLICT (make, model, trim_year, trim_name, trim_description) DO NOTHING;
+
+UPDATE cars SET fulltext_search = make || ' ' || model || ' ' || trim_year || ' ' || trim_name || ' ' || trim_description || ' ' || fuel_type || ' ' || transmission || ' ' || body_type;
