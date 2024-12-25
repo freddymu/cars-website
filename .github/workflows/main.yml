@@ -31,7 +31,8 @@ jobs:
           QUARKUS_DB_USERNAME: ${{ secrets.QUARKUS_DB_USERNAME }}
           QUARKUS_DB_PASSWORD: ${{ secrets.QUARKUS_DB_PASSWORD }}
           QUARKUS_DB_URL: ${{ secrets.QUARKUS_DB_URL }}
-          QUARKUS_DB_URL_JDBC: ${{ secrets.QUARKUS_DB_URL_JDBC }}      
+          QUARKUS_DB_URL_JDBC: ${{ secrets.QUARKUS_DB_URL_JDBC }}
+          QUARKUS_OPENAI_API_KEY: ${{ secrets.QUARKUS_OPENAI_API_KEY }}
 
       - name: Build the Docker image
         uses: docker/build-push-action@v4
@@ -47,3 +48,4 @@ jobs:
             QUARKUS_DB_PASSWORD=${{ secrets.QUARKUS_DB_PASSWORD }}
             QUARKUS_DB_URL=${{ secrets.QUARKUS_DB_URL }}
             QUARKUS_DB_URL_JDBC=${{ secrets.QUARKUS_DB_URL_JDBC }}
+            QUARKUS_OPENAI_API_KEY: ${{ secrets.QUARKUS_OPENAI_API_KEY }}
