@@ -89,7 +89,7 @@ $(document).ready(function () {
 
     colors.forEach((color) => {
       let hexCode = colorsHexCode[color];
-      
+
       const colorBox = $("<div>")
         .addClass("w-6 h-6 rounded cursor-pointer")
         .css("background-color", hexCode ?? color.toLowerCase())
@@ -278,6 +278,14 @@ $(document).ready(function () {
           `${encodeURIComponent(key)}=${encodeURIComponent(value)}`
       )
       .join("&");
+
+    if (
+      queryString.indexOf("search") === -1 &&
+      queryString.indexOf("filter") === -1
+    ) {
+      alert("Please apply filters or search to download XML. ");
+      return;
+    }
 
     window.location.href = `/api/cars/xml?${queryString}`;
   }
