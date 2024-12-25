@@ -89,7 +89,7 @@ public class CarController {
 
     @GET
     @Path("/ui-params")
-    public GenericResponse<Object> getUiParams() {
-        return service.getUiParams();
+    public Uni<GenericResponse<Map<String, Object>>> getUiParams() {
+        return service.getUiParams(client);
     }
 }

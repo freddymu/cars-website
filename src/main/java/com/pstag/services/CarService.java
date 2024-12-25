@@ -100,8 +100,27 @@ public class CarService {
                 "Missing data filled successfully");
     }
 
-    public GenericResponse<Object> getUiParams() {
-        return null;
+    public Uni<GenericResponse<Map<String, Object>>> getUiParams(PgPool client) {
+        Map<String, Uni<?>> uniMap = new HashMap<>();
+        
+        // Initialize the Uni instances for each parameter
+        uniMap.put("makers", CarRepository.getMakers(client));
+        uniMap.put("makersAndModels", CarRepository.getMakerAndModel(client));
+        uniMap.put("transmissions", CarRepository.getTransmission(client));
+        uniMap.put("colors", CarRepository.getColors(client));
+        uniMap.put("fuelTypes", CarRepository.getFuelTypes(client));
+        uniMap.put("bodyTypes", CarRepository.getBodyTypes(client));
+        
+        // Combine all Uris into a single Uni
+        return Uni.combine().all().unis(uniMap.values()).collectFailures()
+            .combinedWith(results -> {
+                Map<String, Object> response = new HashMap<>();
+                int i = 0;
+                for (String key : uniMap.keySet()) {
+                    response.put(key, results.get(i++)); // Map results to corresponding keys
+                }
+                return new GenericResponse<>(response, "UI parameters fetched successfully");
+            });
     }
 
     private String convertToXml(List<CarEntity> cars) {

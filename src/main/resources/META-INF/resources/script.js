@@ -16,7 +16,7 @@ $(document).ready(function() {
     let currentPage = 1;
     const carsPerPage = 9;
     let totalRows = 0;
-    const colors = ['Red', 'Blue', 'Green', 'Yellow', 'Black', 'White', 'Silver', 'Gray'];
+    let colors = [];
 
     // Fetch car data from the API
     function fetchCars(offset = 0, params = {}) {
@@ -44,7 +44,7 @@ $(document).ready(function() {
 
     // Fetch UI parameters from the API
     function fetchUIParams() {
-        return fetch('https://localhost:8080/api/cars/ui-params')
+        return fetch('/api/cars/ui-params')
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -146,15 +146,16 @@ $(document).ready(function() {
         rangeFields.forEach(field => {
             const minValue = $(`#${field}Min`).val();
             const maxValue = $(`#${field}Max`).val();
-            if (minValue) params[`filter[${field}][min]`] = minValue;
-            if (maxValue) params[`filter[${field}][max]`] = maxValue;
+            if (minValue || maxValue) {
+                params[`filter[${field}]`] = `between(${minValue || 0},${maxValue || 99999})`;
+            }
         });
 
         const selectedColors = $('#colorFilters .ring-2').map(function() {
             return $(this).attr('data-color');
         }).get();
         if (selectedColors.length > 0) {
-            params['filter[exteriorColors]'] = selectedColors.join(',');
+            params['filter[color]'] = selectedColors.join(',');
         }
 
         const [sortField, sortOrder] = $('#sort').val().split(',');
@@ -220,19 +221,30 @@ $(document).ready(function() {
 
     // Initialize
     fetchUIParams().then(uiParams => {
-        // TODO: Process uiParams and populate dropdowns
-        // This is a placeholder for processing the UI parameters
-        // You should update this section to handle the actual response structure
         const dropdowns = {
-            make: uiParams.makes || [],
-            model: uiParams.models || [],
-            bodyType: uiParams.bodyTypes || [],
-            transmission: uiParams.transmissions || [],
-            fuelType: uiParams.fuelTypes || []
+            make: uiParams.data.makers || [],
+            bodyType: uiParams.data.bodyTypes || [],
+            transmission: uiParams.data.transmissions || [],
+            fuelType: uiParams.data.fuelTypes || []
         };
+
+        colors = uiParams.data.colors || [];
 
         Object.entries(dropdowns).forEach(([key, values]) => {
             const select = $(`#${key}`);
+
+            if (key === 'make') {
+                select.on('change', function() {
+                    const make = $(this).val();
+                    const models = uiParams.data.makersAndModels[make] || [];
+                    const modelSelect = $('#model');
+                    modelSelect.empty();
+                    modelSelect.append(`<option value="">All</option>`)
+                    models.forEach(model => modelSelect.append(`<option value="${model}">${model}</option>`));
+                    applyFilters();
+                });
+            } 
+            
             values.forEach(value => select.append(`<option value="${value}">${value}</option>`));
         });
 
