@@ -41,9 +41,9 @@ public class CarService {
         return CarRepository.findAll(client, filters, search, sorts, limit, offset);
     }
 
-    public String getXml() {
-        Multi<CarEntity> cars = CarRepository.getLatestSearchResult();
-        List<CarEntity> carList = cars.collect().asList().await().indefinitely();
+    public String getXml(PgPool client, Map<String, String> filters, Map<String, String> sorts, String search) {
+        Uni<TotalRowsAndData<CarEntity>> result = CarRepository.findAll(client, filters, search, sorts, 0, 0);
+        List<CarEntity> carList = result.onItem().transform(TotalRowsAndData::getData).await().indefinitely();
         return convertToXml(carList);
     }
 
@@ -59,7 +59,8 @@ public class CarService {
         for (int i = 1; i <= totalPage; i++) {
             int offset = (i - 1) * pageLimit;
 
-            Uni<TotalRowsAndData<CarEntity>> result = CarRepository.findAll(client, filters, null, null, pageLimit, offset);
+            Uni<TotalRowsAndData<CarEntity>> result = CarRepository.findAll(client, filters, null, null, pageLimit,
+                    offset);
 
             String concatenatedData = result.onItem().transform(totalRowsAndData -> {
                 List<CarEntity> carEntities = totalRowsAndData.getData();
@@ -71,18 +72,20 @@ public class CarService {
             }).await().indefinitely();
 
             ObjectMapper objectMapper = new ObjectMapper();
-            
+
             String response = aiService.getCarInformation(concatenatedData);
 
             Log.info(response);
 
             try {
-                CarResponse carEntities = objectMapper.readValue(response, new TypeReference<CarResponse>(){});
+                CarResponse carEntities = objectMapper.readValue(response, new TypeReference<CarResponse>() {
+                });
                 for (CarEntity car : carEntities.getCars()) {
                     // Log.info(objectMapper.writeValueAsString(car.getExteriorColors()));
                     // Log.info(car.toString());
 
-                    CarEntity updateResult = CarRepository.updateCar(client, car.getId(), car.getColor(), car.getVelocity());
+                    CarEntity updateResult = CarRepository.updateCar(client, car.getId(), car.getColor(),
+                            car.getVelocity());
                     if (updateResult != null) {
                         Log.info("Car with id " + updateResult.getId() + " updated successfully");
                     }
@@ -98,8 +101,6 @@ public class CarService {
     }
 
     private String convertToXml(List<CarEntity> cars) {
-        // Implement the conversion logic here
-        // This is a placeholder implementation
         StringBuilder xmlBuilder = new StringBuilder();
         xmlBuilder.append("<cars>");
         for (CarEntity car : cars) {
@@ -108,6 +109,12 @@ public class CarService {
             xmlBuilder.append("<make>").append(car.getMake()).append("</make>");
             xmlBuilder.append("<model>").append(car.getModel()).append("</model>");
             xmlBuilder.append("<year>").append(car.getTrimYear()).append("</year>");
+            xmlBuilder.append("<trimName>").append(car.getTrimName()).append("</trimName>");
+            xmlBuilder.append("<trimDescription>").append(car.getTrimDescription()).append("</trimDescription>");
+            xmlBuilder.append("<color>").append(car.getColor()).append("</color>");
+            xmlBuilder.append("<length>").append(car.getLength()).append("</length>");
+            xmlBuilder.append("<weight>").append(car.getWeight()).append("</weight>");
+            xmlBuilder.append("<velocity>").append(car.getVelocity()).append("</velocity>");
             xmlBuilder.append("</car>");
         }
         xmlBuilder.append("</cars>");

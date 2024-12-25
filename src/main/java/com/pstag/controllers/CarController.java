@@ -65,8 +65,19 @@ public class CarController {
     @GET
     @Path("/xml")
     @Produces("application/xml")
-    public Response getXml() {
-        String xml = service.getXml();
+    public Response getXml(@Context UriInfo uriInfo,
+            @QueryParam("search") String search) {
+        Map<String, String> filters = uriInfo.getQueryParameters().entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith("filter["))
+                .collect(Collectors.toMap(
+                        entry -> entry.getKey().substring(7, entry.getKey().length() - 1),
+                        entry -> entry.getValue().get(0)));
+        Map<String, String> sorts = uriInfo.getQueryParameters().entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith("sort["))
+                .collect(Collectors.toMap(
+                        entry -> entry.getKey().substring(5, entry.getKey().length() - 1),
+                        entry -> entry.getValue().get(0)));
+        String xml = service.getXml(client, filters, sorts, search);
         return Response.ok(xml).header("Content-Disposition", "attachment; filename=\"cars.xml\"").build();
     }
 
