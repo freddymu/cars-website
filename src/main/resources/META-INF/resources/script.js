@@ -25,7 +25,7 @@ $(document).ready(function() {
             .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
             .join('&');
 
-        return fetch(`http://localhost:8080/api/cars?limit=${carsPerPage}&offset=${offset}&${queryString}`)
+        return fetch(`/api/cars?limit=${carsPerPage}&offset=${offset}&${queryString}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -182,7 +182,7 @@ $(document).ready(function() {
             .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
             .join('&');
 
-        window.location.href = `http://localhost:8080/api/cars/xml?${queryString}`;
+        window.location.href = `/api/cars/xml?${queryString}`;
     }
 
     // Event listeners
