@@ -125,58 +125,54 @@ $(document).ready(function () {
           () => 0.5 - Math.random()
         );
         carCard.html(`                    
-                <div class="relative">
+            <div class="relative">
                 <div class="carousel">
-                    ${shuffledUrls
-                      .map(
-                        ([color, url]) => `
-                    <div class="carousel-item">
-                        <img src="${url}" alt="${car.trimYear} ${car.make} ${car.model} ${car.trimName}" class="w-full h-32 object-cover mb-2 rounded">
-                    </div>
-                    `
-                      )
-                      .join("")}
+                ${shuffledUrls
+                  .map(
+                    ([color, url]) => `
+                <div class="carousel-item">
+                    <img src="${url}" alt="${car.trimYear} ${car.make} ${car.model} ${car.trimName}" class="w-full h-32 object-cover mb-2 rounded">
+                </div>
+                `
+                  )
+                  .join("")}
                 </div>
                 <button class="prev absolute top-1/2 left-0 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full">&#10094;</button>
                 <button class="next absolute top-1/2 right-0 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full">&#10095;</button>
-                </div>
-                <h2 class="text-base font-semibold">${car.trimYear} ${
-          car.make
-        } ${car.model} ${car.trimName}</h2>
-                <p class="text-sm">${car.trimDescription}</p>
-                <div class="flex flex-wrap justify-between mt-2">
-                <div class="flex items-center mr-2 mb-2" title="Fuel Type">
+            </div>
+            <h2 class="text-base font-semibold">${car.trimYear} ${car.make} ${car.model} ${car.trimName}</h2>
+            <p class="text-sm">${car.trimDescription}</p>
+            <p class="text-sm">
+                <i class="fas fa-cogs text-soft-red mr-1"></i>
+                <span class="text-xs">${car.transmission}</span>
+            </p>
+            <div class="grid grid-cols-2 gap-2 mt-2">
+                <div class="flex items-center" title="Fuel Type">
                     <i class="fas fa-gas-pump text-soft-red mr-1"></i>
                     <span class="text-xs">${car.fuelType}</span>
-                </div>
-                <div class="flex items-center mr-2 mb-2" title="Transmission">
-                    <i class="fas fa-cogs text-soft-red mr-1"></i>
-                    <span class="text-xs">${car.transmission}</span>
-                </div>
-                <div class="flex items-center mr-2 mb-2" title="Body Type">
+                </div>                    
+                <div class="flex items-center" title="Body Type">
                     <i class="fas fa-car text-soft-red mr-1"></i>
                     <span class="text-xs">${car.bodyType}</span>
                 </div>
-                <div class="flex items-center mr-2 mb-2" title="Length">
+                <div class="flex items-center" title="Length">
                     <i class="fas fa-ruler-horizontal text-soft-red mr-1"></i>
                     <span class="text-xs">${car.length} in</span>
                 </div>
-                <div class="flex items-center mr-2 mb-2" title="Weight">
+                <div class="flex items-center" title="Weight">
                     <i class="fas fa-weight-hanging text-soft-red mr-1"></i>
                     <span class="text-xs">${car.weight} lbs</span>
                 </div>
-                <div class="flex items-center mr-2 mb-2" title="Velocity">
+                <div class="flex items-center" title="Velocity">
                     <i class="fas fa-tachometer-alt text-soft-red mr-1"></i>
                     <span class="text-xs">${car.velocity} kph</span>
                 </div>
-                </div>
-                ${
-                  car.exteriorColors
-                    ? `<p class="text-sm mt-2">Colors: ${renderColorBoxes(
-                        car.exteriorColors
-                      )}</p>`
-                    : ""
-                }
+            </div>
+            ${
+              car.color
+                ? `<div class="flex mt-4 w-full">${renderColorBoxes(car.color)}</div>`
+                : ""
+            }
             `);
         carList.append(carCard);
       });
@@ -189,11 +185,10 @@ $(document).ready(function () {
   function renderColorBoxes(colors) {
     if (!colors) return "";
     return colors
-      .split(",")
       .map(
         (color) =>
           `<div class="flex flex-col items-center mr-2 mb-2">
-                <span class="inline-block w-6 h-6 rounded" style="background-color: ${color
+                <span class="inline-block w-4 h-4 rounded" style="background-color: ${color
                   .trim()
                   .toLowerCase()};"></span>
                 <span class="text-xs mt-1">${color.trim()}</span>
