@@ -86,4 +86,10 @@ public class CarController {
     public GenericResponse<String> fillMissingData() {
         return service.fillMissingData(client);
     }
+
+    @GET
+    @Path("/ui-params")
+    public GenericResponse<Object> getUiParams() {
+        return service.getUiParams();
+    }
 }

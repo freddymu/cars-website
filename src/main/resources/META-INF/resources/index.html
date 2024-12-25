@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Catalog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'soft-black': '#333333',
+                        'soft-red': '#FF6B6B',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body class="bg-gray-100 text-soft-black">
+    <header class="bg-soft-black text-white py-4">
+        <div class="container mx-auto px-4 flex items-center">
+            <i class="fas fa-car mr-4 text-2xl"></i>
+            <h1 class="text-2xl font-semibold">Car Catalog</h1>
+        </div>
+    </header>
+
+    <div class="container mx-auto p-4 flex flex-col md:flex-row">
+        <!-- Left Sidebar -->
+        <div class="w-full md:w-1/4 pr-0 md:pr-4 mb-4 md:mb-0">
+            <input type="text" id="search" placeholder="Search cars..." class="w-full p-2 mb-4 border border-gray-300 rounded">
+            <div class="space-y-4">
+                <div>
+                    <label class="block mb-2 font-semibold text-sm">Make</label>
+                    <select id="make" class="w-full p-2 border border-gray-300 rounded text-sm">
+                        <option value="">All</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold text-sm">Model</label>
+                    <select id="model" class="w-full p-2 border border-gray-300 rounded text-sm">
+                        <option value="">All</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold text-sm">Year</label>
+                    <div class="flex space-x-2">
+                        <input type="number" id="trimYearMin" placeholder="Min" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                        <input type="number" id="trimYearMax" placeholder="Max" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold text-sm">Body Type</label>
+                    <select id="bodyType" class="w-full p-2 border border-gray-300 rounded text-sm">
+                        <option value="">All</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold text-sm">Transmission</label>
+                    <select id="transmission" class="w-full p-2 border border-gray-300 rounded text-sm">
+                        <option value="">All</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold text-sm">Fuel Type</label>
+                    <select id="fuelType" class="w-full p-2 border border-gray-300 rounded text-sm">
+                        <option value="">All</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold text-sm">Length (inches)</label>
+                    <div class="flex space-x-2">
+                        <input type="number" id="lengthMin" placeholder="Min" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                        <input type="number" id="lengthMax" placeholder="Max" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold text-sm">Weight (lbs)</label>
+                    <div class="flex space-x-2">
+                        <input type="number" id="weightMin" placeholder="Min" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                        <input type="number" id="weightMax" placeholder="Max" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold text-sm">Velocity (mph)</label>
+                    <div class="flex space-x-2">
+                        <input type="number" id="velocityMin" placeholder="Min" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                        <input type="number" id="velocityMax" placeholder="Max" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold text-sm">Colors</label>
+                    <div id="colorFilters" class="flex flex-wrap gap-2"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Workspace -->
+        <div class="w-full md:w-3/4 pl-0 md:pl-4">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <label for="sort" class="mr-2 text-sm font-semibold">Sort by:</label>
+                    <select id="sort" class="p-2 border border-gray-300 rounded text-sm">
+                        <option value="make,asc">Make (A-Z)</option>
+                        <option value="make,desc">Make (Z-A)</option>
+                        <option value="model,asc">Model (A-Z)</option>
+                        <option value="model,desc">Model (Z-A)</option>
+                        <option value="trimYear,asc">Year (Oldest)</option>
+                        <option value="trimYear,desc">Year (Newest)</option>
+                        <option value="length,asc">Length (Shortest)</option>
+                        <option value="length,desc">Length (Longest)</option>
+                        <option value="weight,asc">Weight (Lightest)</option>
+                        <option value="weight,desc">Weight (Heaviest)</option>
+                    </select>
+                </div>
+                <button id="downloadXML" class="bg-soft-red text-white px-4 py-2 rounded hover:bg-red-600 transition-colors text-sm">
+                    Download XML
+                </button>
+            </div>
+            <div id="carList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            <div class="mt-4 flex justify-center">
+                <button id="prevPage" class="bg-soft-black text-white px-4 py-2 rounded mr-2 hover:bg-gray-700 transition-colors text-sm">Previous</button>
+                <span id="pageInfo" class="px-4 py-2 text-sm"></span>
+                <button id="nextPage" class="bg-soft-black text-white px-4 py-2 rounded ml-2 hover:bg-gray-700 transition-colors text-sm">Next</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+

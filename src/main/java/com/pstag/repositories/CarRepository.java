@@ -153,7 +153,7 @@ public class CarRepository {
         if (search != null && !search.isEmpty()) {
             queryBuilder.where(
                     "(make ILIKE $ OR model ILIKE $ OR trim_name ILIKE $ OR trim_description ILIKE $)",
-                    "%" + search + "%");
+                    "%" + search.replace(" ", "%") + "%");
         }
     }
 

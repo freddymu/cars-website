@@ -100,6 +100,10 @@ public class CarService {
                 "Missing data filled successfully");
     }
 
+    public GenericResponse<Object> getUiParams() {
+        return null;
+    }
+
     private String convertToXml(List<CarEntity> cars) {
         StringBuilder xmlBuilder = new StringBuilder();
         xmlBuilder.append("<cars>");
