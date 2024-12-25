@@ -30,78 +30,94 @@
 </head>
 <body class="bg-gray-100 text-soft-black">
     <header class="bg-soft-black text-white py-4">
-        <div class="container mx-auto px-4 flex items-center">
-            <i class="fas fa-car mr-4 text-2xl"></i>
-            <h1 class="text-2xl font-semibold">Car Catalog</h1>
+        <div class="container mx-auto px-4 flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="fas fa-car mr-4 text-2xl"></i>
+                <h1 class="text-2xl font-semibold">Car Catalog</h1>
+            </div>
+            <button id="filterToggle" class="md:hidden bg-soft-red text-white px-3 py-2 rounded">
+                <i class="fas fa-filter"></i> Filters
+            </button>
         </div>
     </header>
 
     <div class="container mx-auto p-4 flex flex-col md:flex-row">
         <!-- Left Sidebar -->
-        <div class="w-full md:w-1/4 pr-0 md:pr-4 mb-4 md:mb-0">
-            <input type="text" id="search" placeholder="Search cars..." class="w-full p-2 mb-4 border border-gray-300 rounded">
-            <div class="space-y-4">
-                <div>
-                    <label class="block mb-2 font-semibold text-sm">Make</label>
-                    <select id="make" class="w-full p-2 border border-gray-300 rounded text-sm">
-                        <option value="">All</option>
-                    </select>
+        <div id="sidebar" class="w-full md:w-1/4 pr-0 md:pr-4 mb-4 md:mb-0 hidden md:block fixed md:static inset-0 bg-white md:bg-transparent z-50 overflow-y-auto md:overflow-visible">
+            <div class="p-4 md:p-0">
+                <div class="flex justify-between items-center md:hidden mb-4">
+                    <h2 class="text-lg font-semibold">Filters</h2>
+                    <button id="closeSidebar" class="text-soft-black">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
-                <div>
-                    <label class="block mb-2 font-semibold text-sm">Model</label>
-                    <select id="model" class="w-full p-2 border border-gray-300 rounded text-sm">
-                        <option value="">All</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block mb-2 font-semibold text-sm">Year</label>
-                    <div class="flex space-x-2">
-                        <input type="number" id="trimYearMin" placeholder="Min" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
-                        <input type="number" id="trimYearMax" placeholder="Max" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                <input type="text" id="search" placeholder="Search cars..." class="w-full p-2 mb-4 border border-gray-300 rounded">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block mb-2 font-semibold text-sm">Make</label>
+                        <select id="make" class="w-full p-2 border border-gray-300 rounded text-sm">
+                            <option value="">All</option>
+                        </select>
                     </div>
-                </div>
-                <div>
-                    <label class="block mb-2 font-semibold text-sm">Body Type</label>
-                    <select id="bodyType" class="w-full p-2 border border-gray-300 rounded text-sm">
-                        <option value="">All</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block mb-2 font-semibold text-sm">Transmission</label>
-                    <select id="transmission" class="w-full p-2 border border-gray-300 rounded text-sm">
-                        <option value="">All</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block mb-2 font-semibold text-sm">Fuel Type</label>
-                    <select id="fuelType" class="w-full p-2 border border-gray-300 rounded text-sm">
-                        <option value="">All</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block mb-2 font-semibold text-sm">Length (inches)</label>
-                    <div class="flex space-x-2">
-                        <input type="number" id="lengthMin" placeholder="Min" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
-                        <input type="number" id="lengthMax" placeholder="Max" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                    <div>
+                        <label class="block mb-2 font-semibold text-sm">Model</label>
+                        <select id="model" class="w-full p-2 border border-gray-300 rounded text-sm">
+                            <option value="">All</option>
+                        </select>
                     </div>
-                </div>
-                <div>
-                    <label class="block mb-2 font-semibold text-sm">Weight (lbs)</label>
-                    <div class="flex space-x-2">
-                        <input type="number" id="weightMin" placeholder="Min" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
-                        <input type="number" id="weightMax" placeholder="Max" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                    <div>
+                        <label class="block mb-2 font-semibold text-sm">Year</label>
+                        <div class="flex space-x-2">
+                            <input type="number" id="trimYearMin" placeholder="Min" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                            <input type="number" id="trimYearMax" placeholder="Max" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                        </div>
                     </div>
-                </div>
-                <div>
-                    <label class="block mb-2 font-semibold text-sm">Velocity (kph)</label>
-                    <div class="flex space-x-2">
-                        <input type="number" id="velocityMin" placeholder="Min" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
-                        <input type="number" id="velocityMax" placeholder="Max" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                    <div>
+                        <label class="block mb-2 font-semibold text-sm">Body Type</label>
+                        <select id="bodyType" class="w-full p-2 border border-gray-300 rounded text-sm">
+                            <option value="">All</option>
+                        </select>
                     </div>
-                </div>
-                <div>
-                    <label class="block mb-2 font-semibold text-sm">Colors</label>
-                    <div id="colorFilters" class="flex flex-wrap gap-2"></div>
+                    <div>
+                        <label class="block mb-2 font-semibold text-sm">Transmission</label>
+                        <select id="transmission" class="w-full p-2 border border-gray-300 rounded text-sm">
+                            <option value="">All</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-2 font-semibold text-sm">Fuel Type</label>
+                        <select id="fuelType" class="w-full p-2 border border-gray-300 rounded text-sm">
+                            <option value="">All</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-2 font-semibold text-sm">Length (inches)</label>
+                        <div class="flex space-x-2">
+                            <input type="number" id="lengthMin" placeholder="Min" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                            <input type="number" id="lengthMax" placeholder="Max" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block mb-2 font-semibold text-sm">Weight (lbs)</label>
+                        <div class="flex space-x-2">
+                            <input type="number" id="weightMin" placeholder="Min" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                            <input type="number" id="weightMax" placeholder="Max" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block mb-2 font-semibold text-sm">Velocity (kph)</label>
+                        <div class="flex space-x-2">
+                            <input type="number" id="velocityMin" placeholder="Min" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                            <input type="number" id="velocityMax" placeholder="Max" class="w-1/2 p-2 border border-gray-300 rounded text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block mb-2 font-semibold text-sm">Colors</label>
+                        <div id="colorFilters" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    <button id="resetFilters" class="w-full bg-soft-black text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors text-sm">
+                        Reset Filters
+                    </button>
                 </div>
             </div>
         </div>
@@ -129,6 +145,11 @@
                 </button>
             </div>
             <div id="carList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            <div id="emptyState" class="hidden text-center py-8">
+                <i class="fas fa-search text-4xl text-gray-400 mb-4"></i>
+                <h2 class="text-2xl font-semibold mb-2">No results found</h2>
+                <p class="text-gray-600">Try adjusting your search or filter to find what you're looking for.</p>
+            </div>
             <div class="mt-4 flex justify-center">
                 <button id="prevPage" class="bg-soft-black text-white px-4 py-2 rounded mr-2 hover:bg-gray-700 transition-colors text-sm">Previous</button>
                 <span id="pageInfo" class="px-4 py-2 text-sm"></span>
