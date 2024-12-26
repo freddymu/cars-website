@@ -28,7 +28,6 @@ public class SqlQueryBuilder {
      */
     public SqlQueryBuilder select(String... columns) {
         for (String column : columns) {
-            validateColumn(column);
             this.columns.add(column);
         }
         return this;
@@ -54,24 +53,46 @@ public class SqlQueryBuilder {
      * @return The builder instance.
      */
     public SqlQueryBuilder where(String clause, Object... params) {
+        validateWhereClause(clause);
+
+        if (!clause.contains("IS NULL")) {
+            clause = replacePlaceholders(clause, params.length);
+        }
+
+        this.whereClauses.add(clause);
+        Collections.addAll(this.parameters, params);
+        return this;
+    }
+
+    /**
+     * Validate the WHERE clause.
+     *
+     * @param clause The SQL condition with placeholders.
+     * @param params The parameters corresponding to the placeholders.
+     */
+    private void validateWhereClause(String clause) {
         if (!clause.contains("$") && !clause.contains("IS NULL") && !clause.contains("ARRAY[")) {
             throw new IllegalArgumentException(
                     "WHERE clause must contain at least one parameter placeholder '$': " + clause);
         }
+    }
 
-        if (!clause.contains("IS NULL")) {
-
-            if (params.length == 1) {
-                clause = clause.replace("$", "$" + paramIndex++);
-            } else {
-                for (Object param : params) {
-                    clause = clause.replaceFirst(" \\$ ", " \\$" + paramIndex++ + " ");
-                }
+    /**
+     * Replace placeholders in the WHERE clause with parameter indices.
+     *
+     * @param clause     The SQL condition with placeholders.
+     * @param paramCount The number of parameters.
+     * @return The clause with replaced placeholders.
+     */
+    private String replacePlaceholders(String clause, int paramCount) {
+        if (paramCount == 1) {
+            return clause.replace("$", "$" + paramIndex++);
+        } else {
+            for (int i = 0; i < paramCount; i++) {
+                clause = clause.replaceFirst("\\$", "\\$" + paramIndex++);
             }
+            return clause;
         }
-        this.whereClauses.add(clause);
-        Collections.addAll(this.parameters, params);
-        return this;
     }
 
     /**
@@ -82,7 +103,6 @@ public class SqlQueryBuilder {
      */
     public SqlQueryBuilder orderBy(String... columns) {
         for (String column : columns) {
-            validateColumn(column);
             this.orderBy.add(column);
         }
         return this;
@@ -206,17 +226,6 @@ public class SqlQueryBuilder {
         }
 
         return new Query(sql.toString(), List.copyOf(parameters));
-    }
-
-    /**
-     * Validate that the column name is allowed.
-     *
-     * @param column Column name to validate.
-     */
-    private void validateColumn(String column) {
-        // if (!ALLOWED_COLUMNS.contains(column.toLowerCase())) {
-        // throw new IllegalArgumentException("Invalid column name: " + column);
-        // }
     }
 
     /**

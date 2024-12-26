@@ -62,7 +62,7 @@ public class CarService {
     public GenericResponse<String> fillMissingData(PgPool client) {
 
         Map<String, String> filters = new HashMap<>();
-        filters.put("velocity", null);
+        filters.put("velocity", "0");
 
         int pageLimit = 3;
         int totalPage = 15688 / pageLimit;
@@ -82,27 +82,33 @@ public class CarService {
                 return concatenatedDataBuilder.toString();
             }).await().indefinitely();
 
-            ObjectMapper objectMapper = new ObjectMapper();
+            if (concatenatedData.isEmpty()) {
+                Log.info("No missing data found");
+                continue;
+            }   
 
             String response = aiService.getCarInformation(concatenatedData);
 
             Log.info(response);
 
             try {
+                ObjectMapper objectMapper = new ObjectMapper();
                 CarResponse carEntities = objectMapper.readValue(response, new TypeReference<CarResponse>() {
                 });
                 for (CarEntity car : carEntities.getCars()) {
                     // Log.info(objectMapper.writeValueAsString(car.getExteriorColors()));
                     // Log.info(car.toString());
 
-                    CarEntity updateResult = CarRepository.updateCar(client, car.getId(), car.getColor(),
-                            car.getVelocity());
-                    if (updateResult != null) {
-                        Log.info("Car with id " + updateResult.getId() + " updated successfully");
-                    }
+                    CarRepository.updateCar(client, car.getId(), car.getColor(), car.getVelocity())
+                            .onItem().invoke(updateResult -> {
+                                if (updateResult != null) {
+                                    Log.info("Car with id " + updateResult.getId() + " updated successfully");
+                                }
+                            }).await().indefinitely();
                 }
             } catch (JsonProcessingException e) {
                 // throw new RuntimeException("Error processing JSON", e);
+                Log.error("Error processing JSON", e);
             }
 
         }
@@ -250,6 +256,9 @@ public class CarService {
             xmlBuilder.append("<year>").append(car.getTrimYear()).append("</year>");
             xmlBuilder.append("<trimName>").append(car.getTrimName()).append("</trimName>");
             xmlBuilder.append("<trimDescription>").append(car.getTrimDescription()).append("</trimDescription>");
+            xmlBuilder.append("<bodyType>").append(car.getBodyType()).append("</bodyType>");
+            xmlBuilder.append("<fuelType>").append(car.getFuelType()).append("</fuelType>");
+            xmlBuilder.append("<transmission>").append(car.getTransmission()).append("</transmission>");
             xmlBuilder.append("<color>").append(car.getColor()).append("</color>");
             xmlBuilder.append("<length>").append(car.getLength()).append("</length>");
             xmlBuilder.append("<weight>").append(car.getWeight()).append("</weight>");

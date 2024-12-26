@@ -82,7 +82,7 @@ public class CarRepository {
                 .onItem().transform(tuple -> new TotalRowsAndData<>(tuple.getItem1(), tuple.getItem2()));
     }
 
-    public static CarEntity updateCar(PgPool client, Long id, List<String> colors, Double velocity) {
+    public static Uni<CarEntity> updateCar(PgPool client, Long id, List<String> colors, Double velocity) {
 
         List<CarEntity> result = client
                 .preparedQuery("UPDATE cars SET color = $1, velocity = $2 WHERE id = $3 RETURNING *")
@@ -92,7 +92,7 @@ public class CarRepository {
                 .collect().asList()
                 .await().indefinitely();
 
-        return result.get(0);
+        return Uni.createFrom().item(result.get(0));
     }
 
     public static Uni<List<String>> getMakers(PgPool client) {
@@ -194,18 +194,47 @@ public class CarRepository {
         return Uni.createFrom().item(result.get(0));
     }
 
+    public static Uni<Integer> countTotalRows(PgPool client, Map<String, String> filters, String search) {
+        SqlQueryBuilder queryBuilder = new SqlQueryBuilder();
+        queryBuilder.select("COUNT(*) AS total_rows")
+                .from("cars");
+
+        applyFilters(queryBuilder, filters);
+        applySearch(queryBuilder, search);
+
+        Query query = queryBuilder.build();
+
+        return client.preparedQuery(query.getSql())
+                .execute(Tuple.from(query.getParameters()))
+                .onItem().transform(rowSet -> {
+                    if (rowSet.iterator().hasNext()) {
+                        Row row = rowSet.iterator().next();
+                        return row.getInteger("total_rows");
+                    } else {
+                        return 0;
+                    }
+                });
+    }
+
     private static void applyFilters(SqlQueryBuilder queryBuilder, Map<String, String> filters) {
+
         if (filters != null && !filters.isEmpty()) {
             for (Map.Entry<String, String> entry : filters.entrySet()) {
-                String snakeCaseKey = entry.getKey().replaceAll("([a-z])([A-Z]+)", "$1_$2").toLowerCase();
+                String fieldName = entry.getKey().replaceAll("([a-z])([A-Z]+)", "$1_$2").toLowerCase();
                 String originalValue = entry.getValue();
 
+                // check the field name. The field name should be available in CarEntity properties
+                if (!CarEntity.getFields().contains(fieldName)) {
+                    // throw new IllegalArgumentException("Invalid filter field: " + fieldName);
+                    continue;
+                }                
+
                 if (originalValue != null && originalValue.toLowerCase().contains("between(")) {
-                    handleBetweenFilter(queryBuilder, snakeCaseKey, originalValue);
+                    handleBetweenFilter(queryBuilder, fieldName, originalValue);
                 } else if (originalValue != null && originalValue.toLowerCase().contains("in(")) {
-                    handleInFilter(queryBuilder, snakeCaseKey, originalValue);
+                    handleInFilter(queryBuilder, fieldName, originalValue);
                 } else {
-                    handleDefaultFilter(queryBuilder, snakeCaseKey, originalValue);
+                    handleDefaultFilter(queryBuilder, fieldName, originalValue);
                 }
             }
         }

@@ -46,18 +46,17 @@ class CarControllerTest {
                 .statusCode(200)
                 .contentType("application/json")
                 .body("data.size()", is(10)); // Assuming default limit is 10
-                // .body("data[0].price", is(lessThanOrEqualTo("data[1].price")));
     }
 
-    // @Test
-    // void testGetCarsXmlEndpoint() {
-    //     given()
-    //             .when().get("/api/cars/xml")
-    //             .then()
-    //             .statusCode(200)
-    //             .contentType("application/xml")
-    //             .header("Content-Disposition", containsString("attachment; filename=\"cars.xml\""))
-    //             .body(containsString("<cars>"));
-    // }
-
+    @Test
+    void testGetCarsWithXmlEndpoint() {
+        given()
+                .queryParam("filter[trimYear]", "2020")
+                .queryParam("search", "sedan")
+                .when().get("/api/cars/xml")
+                .then()
+                .statusCode(200)
+                .contentType("application/xml")
+                .body(containsString("<bodyType>Sedan</bodyType>"));
+    }
 }

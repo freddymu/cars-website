@@ -3,12 +3,12 @@ package com.pstag.interfaces;
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import io.quarkiverse.langchain4j.RegisterAiService;
-
-import com.pstag.entities.CarResponse;
+import jakarta.enterprise.context.ApplicationScoped;
 
 //@RegisterAiService(modelName="gpt-4o-mini-2024-07-18")
 @RegisterAiService(chatMemoryProviderSupplier = RegisterAiService.NoChatMemoryProviderSupplier.class)
 // @RegisterAiService
+@ApplicationScoped
 public interface MyAiService {
 
     @SystemMessage("You are a professional poet")
