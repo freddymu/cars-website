@@ -89,7 +89,7 @@ public class SqlQueryBuilder {
             return clause.replace("$", "$" + paramIndex++);
         } else {
             for (int i = 0; i < paramCount; i++) {
-                clause = clause.replaceFirst("\\$", "\\$" + paramIndex++);
+                clause = clause.replaceFirst(" \\$ ", " \\$" + paramIndex++ + " ");
             }
             return clause;
         }
