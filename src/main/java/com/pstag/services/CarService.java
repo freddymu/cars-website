@@ -140,10 +140,10 @@ public class CarService {
                     // Log.info(objectMapper.writeValueAsString(car.getExteriorColors()));
                     // Log.info(car.toString());
 
-                    CarRepository.updateCar(client, car.getId(), car.getColor(), car.getVelocity())
+                    CarRepository.updateCar(client, car.id(), car.color(), car.velocity())
                             .onItem().invoke(updateResult -> {
                                 if (updateResult != null) {
-                                    Log.info("Car with id " + updateResult.getId() + " updated successfully");
+                                    Log.info("Car with id " + updateResult.id() + " updated successfully");
                                 }
                             }).await().indefinitely();
                 }
@@ -205,8 +205,8 @@ public class CarService {
             if (car == null) {
                 return Uni.createFrom().item(new GenericResponse<>(null, "Car not found"));
             }
-            List<String> colors = car.getColor();
-            List<String> urls = car.getImageUrl();
+            List<String> colors = car.color();
+            List<String> urls = car.imageUrl();
 
             if (colors == null || colors.isEmpty()) {
                 colors = List.of("Black", "White", "Gray", "Silver", "Blue", "Red");
@@ -223,7 +223,7 @@ public class CarService {
 
             List<Uni<Map.Entry<String, String>>> imageUnis = colors.stream()
                     .map(color -> {
-                        String keyword = "Car " + car.getTrimYear() + " " + car.getMake() + " " + car.getModel() + " " + car.getTrimName() + " " + color;
+                        String keyword = "Car " + car.trimYear() + " " + car.make() + " " + car.model() + " " + car.trimName() + " " + color;
                         return fetchImageUrl(keyword)
                                 .onItem().transform(url -> Map.entry(color, url));
                     })
@@ -344,19 +344,19 @@ public class CarService {
         xmlBuilder.append("<cars>");
         for (CarEntity car : cars) {
             xmlBuilder.append("<car>");
-            xmlBuilder.append("<id>").append(car.getId()).append("</id>");
-            xmlBuilder.append("<make>").append(car.getMake()).append("</make>");
-            xmlBuilder.append("<model>").append(car.getModel()).append("</model>");
-            xmlBuilder.append("<year>").append(car.getTrimYear()).append("</year>");
-            xmlBuilder.append("<trimName>").append(car.getTrimName()).append("</trimName>");
-            xmlBuilder.append("<trimDescription>").append(car.getTrimDescription()).append("</trimDescription>");
-            xmlBuilder.append("<bodyType>").append(car.getBodyType()).append("</bodyType>");
-            xmlBuilder.append("<fuelType>").append(car.getFuelType()).append("</fuelType>");
-            xmlBuilder.append("<transmission>").append(car.getTransmission()).append("</transmission>");
-            xmlBuilder.append("<color>").append(car.getColor()).append("</color>");
-            xmlBuilder.append("<length>").append(car.getLength()).append("</length>");
-            xmlBuilder.append("<weight>").append(car.getWeight()).append("</weight>");
-            xmlBuilder.append("<velocity>").append(car.getVelocity()).append("</velocity>");
+            xmlBuilder.append("<id>").append(car.id()).append("</id>");
+            xmlBuilder.append("<make>").append(car.make()).append("</make>");
+            xmlBuilder.append("<model>").append(car.model()).append("</model>");
+            xmlBuilder.append("<year>").append(car.trimYear()).append("</year>");
+            xmlBuilder.append("<trimName>").append(car.trimName()).append("</trimName>");
+            xmlBuilder.append("<trimDescription>").append(car.trimDescription()).append("</trimDescription>");
+            xmlBuilder.append("<bodyType>").append(car.bodyType()).append("</bodyType>");
+            xmlBuilder.append("<fuelType>").append(car.fuelType()).append("</fuelType>");
+            xmlBuilder.append("<transmission>").append(car.transmission()).append("</transmission>");
+            xmlBuilder.append("<color>").append(car.color()).append("</color>");
+            xmlBuilder.append("<length>").append(car.length()).append("</length>");
+            xmlBuilder.append("<weight>").append(car.weight()).append("</weight>");
+            xmlBuilder.append("<velocity>").append(car.velocity()).append("</velocity>");
             xmlBuilder.append("</car>");
         }
         xmlBuilder.append("</cars>");

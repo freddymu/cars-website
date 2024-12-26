@@ -110,11 +110,11 @@ public class Jobs {
             CarResponse carEntities = objectMapper.readValue(response, new TypeReference<CarResponse>() {
             });
             carEntities.getCars()
-                    .forEach(car -> CarRepository.updateCar(client, car.getId(), car.getColor(), car.getVelocity())
+                    .forEach(car -> CarRepository.updateCar(client, car.id(), car.color(), car.velocity())
                             .subscribe().with(
                                     updateResult -> {
                                         if (updateResult != null) {
-                                            Log.info("Car with id " + updateResult.getId() + " updated successfully");
+                                            Log.info("Car with id " + updateResult.id() + " updated successfully");
                                         }
                                     },
                                     failure -> Log.error("Error updating car: " + failure.getMessage())));

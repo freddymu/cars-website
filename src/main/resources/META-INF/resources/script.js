@@ -119,10 +119,14 @@ $(document).ready(function () {
         const carCard = $("<div id='carList'>").addClass(
           "bg-white p-4 rounded shadow"
         );
-        const response = await fetch(`/api/cars/image/${car.id}`);
-        const json = await response.json();
 
-        const shuffledUrls = Object.entries(json.data).sort(
+        if (!car.imageUrl || (Array.isArray(car.imageUrl) && car.imageUrl.length === 0)) {
+          const response = await fetch(`/api/cars/image/${car.id}`);
+          const json = await response.json();
+          car.imageUrl = json.data;
+        }
+
+        const shuffledUrls = Object.entries(car.imageUrl).sort(
           () => 0.5 - Math.random()
         );
         carCard.html(`                    
