@@ -228,7 +228,7 @@
                     if (mutation.addedNodes.length) {
 
                         $(mutation.addedNodes).each(function () {
-
+                            console.log('mutation');
                             initializeCarousel($(this));
                         });
                     }

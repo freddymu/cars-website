@@ -17,6 +17,7 @@ $(document).ready(function () {
   const carsPerPage = 9;
   let totalRows = 0;
   let colors = [];
+  let isInitFilterParams = true;
 
   // Fetch car data from the API
   function fetchCars(offset = 0, params = {}) {
@@ -140,7 +141,9 @@ $(document).ready(function () {
                 <button class="prev absolute top-1/2 left-0 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full">&#10094;</button>
                 <button class="next absolute top-1/2 right-0 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full">&#10095;</button>
             </div>
-            <h2 class="text-base font-semibold">${car.trimYear} ${car.make} ${car.model} ${car.trimName}</h2>
+            <h2 class="text-base font-semibold">${car.trimYear} ${car.make} ${
+          car.model
+        } ${car.trimName}</h2>
             <p class="text-sm">${car.trimDescription}</p>
             <p class="text-sm">
                 <i class="fas fa-cogs text-soft-red mr-1"></i>
@@ -170,7 +173,9 @@ $(document).ready(function () {
             </div>
             ${
               car.color
-                ? `<div class="flex mt-4 w-full">${renderColorBoxes(car.color)}</div>`
+                ? `<div class="flex mt-4 w-full">${renderColorBoxes(
+                    car.color
+                  )}</div>`
                 : ""
             }
             `);
@@ -252,9 +257,59 @@ $(document).ready(function () {
     return params;
   }
 
+  // create function to setFilterParams from URL query string
+  function initFilterParams() {
+    const url = new URL(window.location);
+    const searchParams = new URLSearchParams(url.search);
+    const params = {};
+
+    searchParams.forEach((value, key) => {
+      if (key === "search") {
+        $("#search").val(value);
+      } else if (key.startsWith("filter")) {
+        const match = /\[(.*?)\]/.exec(key);
+        const field = match ? match[1] : null;
+        $(`#${field}`).val(value);
+
+        if (field === "make") {
+          // trigger event change
+          $(`#${field}`).trigger("change");
+        }
+
+        if (value.indexOf("between") >= 0) {
+          const [min, max] = value.match(/\d+/g);
+          $(`#${field}Min`).val(min);
+          $(`#${field}Max`).val(max >= 99999 ? "" : max);
+        }
+
+        if (field === "color") {
+          value.split(",").forEach((color) => {
+            $(`#colorFilters [data-color="${color}"]`).addClass(
+              "ring-2 ring-soft-red"
+            );
+          });
+        }
+      } else if (key.startsWith("sort")) {
+        const match = /\[(.*?)\]/.exec(key);
+        const field = match ? match[1] : null;
+        $("#sort").val(`${field},${value}`);
+      }
+    });
+  }
+
+  function updateURLWithFilter(params) {
+    const url = new URL(window.location);
+    const queryString = Object.entries(params)
+      .map(([key, value]) => `${key}=${value}`)
+      .join("&");
+    window.history.pushState({}, "", `${url.pathname}?${queryString}`);
+  }
+
   // Apply filters
   function applyFilters() {
+    if (isInitFilterParams) return;
     const params = getFilterParams();
+    updateURLWithFilter(params);
     currentPage = 1;
     fetchCars(0, params).then((data) => {
       cars = data;
@@ -337,45 +392,40 @@ $(document).ready(function () {
   });
 
   // Initialize
-  fetchUIParams()
-    .then((uiParams) => {
-      const dropdowns = {
-        make: uiParams.data.makers || [],
-        bodyType: uiParams.data.bodyTypes || [],
-        transmission: uiParams.data.transmissions || [],
-        fuelType: uiParams.data.fuelTypes || [],
-      };
+  fetchUIParams().then((uiParams) => {
+    const dropdowns = {
+      make: uiParams.data.makers || [],
+      bodyType: uiParams.data.bodyTypes || [],
+      transmission: uiParams.data.transmissions || [],
+      fuelType: uiParams.data.fuelTypes || [],
+    };
 
-      colors = uiParams.data.colors || [];
+    colors = uiParams.data.colors || [];
 
-      Object.entries(dropdowns).forEach(([key, values]) => {
-        const select = $(`#${key}`);
+    Object.entries(dropdowns).forEach(([key, values]) => {
+      const select = $(`#${key}`);
 
-        if (key === "make") {
-          select.on("change", function () {
-            const make = $(this).val();
-            const models = uiParams.data.makersAndModels[make] || [];
-            const modelSelect = $("#model");
-            modelSelect.empty();
-            modelSelect.append(`<option value="">All</option>`);
-            models.forEach((model) =>
-              modelSelect.append(`<option value="${model}">${model}</option>`)
-            );
-            applyFilters();
-          });
-        }
+      if (key === "make") {
+        select.on("change", function () {
+          const make = $(this).val();
+          const models = uiParams.data.makersAndModels[make] || [];
+          const modelSelect = $("#model");
+          modelSelect.empty();
+          modelSelect.append(`<option value="">All</option>`);
+          models.forEach((model) =>
+            modelSelect.append(`<option value="${model}">${model}</option>`)
+          );
+        });
+      }
 
-        values.forEach((value) =>
-          select.append(`<option value="${value}">${value}</option>`)
-        );
-      });
-
-      initColorFilters();
-      return fetchCars(0, {});
-    })
-    .then((data) => {
-      cars = data;
-      filteredCars = [...cars];
-      renderCars();
+      values.forEach((value) =>
+        select.append(`<option value="${value}">${value}</option>`)
+      );
     });
+
+    initColorFilters();
+    initFilterParams();
+    isInitFilterParams = false;
+    applyFilters();
+  });
 });
