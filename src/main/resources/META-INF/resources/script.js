@@ -310,7 +310,14 @@ $(document).ready(function () {
   }
 
   // Apply filters
-  function applyFilters() {
+  function applyFilters(event) {
+
+    const triggerById = event?.target?.id;
+
+    if (triggerById === "make") {
+      $("#model").val("");
+    }
+
     if (isInitFilterParams) return;
     const params = getFilterParams();
     updateURLWithFilter(params);
