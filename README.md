@@ -1,26 +1,38 @@
-# cars-website
+# 🚗 cars-website
 
 Try it here https://cars-website.sololeveling.quest
+> **WARNING**: *If somehow the SSL is not detected, please proceed; it is still safe to continue.*
 
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
 
-## Data Source
+## 📄 Data Source
 - The car data taken from https://carapi.app/features/vehicle-csv-download, without velocity and color.
 - For several records, the velocity and color are populated using OpenAI GPT-4o-mini.
+- For several records, the velocity value has been randomized with the following SQL:
+```sql
+UPDATE cars 
+SET velocity = FLOOR(180 + RANDOM() * (280 - 180 + 1)) 
+WHERE velocity = 0; 
+```
 - For several records, the color and image url are fetched from Google Image Search
     - There will be some delay when rendering the car card if the image URL is not available in the database.
     - When the image URL is not available, it will be fetched from Google Image Search and then saved to the database.
 
-## Demo Video (~1 minute)
+## 💻 Server Location 
+- The website has been deployed in the Singapore region.
+- The PostgreSQL database is also deployed in the AWS Singapore region via the Neon.techplatform. 
+> **DISCLAIMER**: *A difference in response time between the demo video and reality is expected when accessed from regions far from Singapore.*
+
+## 🎞️ Demo Video (~1 minute)
 
 ![Car Website Screenshot](.github/cars-website.png)
 
-## Continuous Testing Result:
+## 🧪 Continuous Testing Result:
 ![Continuous Testing Result](.github/continuous-testing-result.png)
 
-## Scope of Work
+## 📝 Scope of Work
 As a customer I want a web application where I can search for cars given by certain criteria.
 There should be the possibility to download the result list in xml format.
 
@@ -32,7 +44,7 @@ There should be the possibility to download the result list in xml format.
 - Prove the implementation meet the requirement
 - Ensure we can prove software quality and execution
 
-## Prerequisites
+## 🫙 Prerequisites
 
 ### Database
 Set up the database using PostgreSQL version 17.
