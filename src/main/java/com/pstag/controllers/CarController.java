@@ -82,11 +82,11 @@ public class CarController {
         return Response.ok(xml).header("Content-Disposition", "attachment; filename=\"cars.xml\"").build();
     }
 
-    @PATCH
-    @Path("/fill-missing-data")
-    public GenericResponse<String> fillMissingData() {
-        return service.fillMissingData(client);
-    }
+    // @PATCH
+    // @Path("/fill-missing-data")
+    // public GenericResponse<String> fillMissingData() {
+    //     return service.fillMissingData(client);
+    // }
 
     @GET
     @Path("/ui-params")

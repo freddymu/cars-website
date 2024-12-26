@@ -22,10 +22,12 @@ WHERE velocity = 0;
 
 ## 💻 Server Location 
 - The website has been deployed in the Singapore region.
-- The PostgreSQL database is also deployed in the AWS Singapore region via the Neon.techplatform. 
+- The PostgreSQL database is also deployed in the AWS Singapore region via the Neon.tech platform. 
 > **DISCLAIMER**: *A difference in response time between the demo video and reality is expected when accessed from regions far from Singapore.*
 
-## 🎞️ Demo Video (~1 minute)
+## 🎞️ Demo Video (~3 minutes)
+
+> **WATCH NOW**: https://www.loom.com/share/b7bc9c771463490e9ba75e248821783c?sid=5dada62f-e0c2-40a7-8720-b038e1d93fc0
 
 ![Car Website Screenshot](.github/cars-website.png)
 
