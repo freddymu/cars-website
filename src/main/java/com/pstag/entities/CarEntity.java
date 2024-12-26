@@ -251,4 +251,7 @@ public class CarEntity {
                 '}';
     }
 
+    public static List<String> getFields() {
+        return Arrays.asList("id", "make", "model", "trim_year", "trim_name", "trim_description", "fuel_type", "transmission", "body_type", "color", "length", "weight", "velocity");
+    }
 }
