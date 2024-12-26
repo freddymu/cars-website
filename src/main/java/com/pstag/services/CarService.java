@@ -46,6 +46,17 @@ public class CarService {
         this.aiService = aiService;
     }
 
+    /**
+     * Retrieves a paginated list of CarEntity objects based on the provided filters, search criteria, and sorting options.
+     *
+     * @param client the PgPool client used to interact with the database
+     * @param filters a map of filter criteria to apply to the query
+     * @param search a search string to filter the results
+     * @param sorts a map of sorting options to apply to the query
+     * @param limit the maximum number of results to return
+     * @param offset the starting point in the list of results
+     * @return a Uni containing a TotalRowsAndData object with the total number of rows and the list of CarEntity objects
+     */
     public Uni<TotalRowsAndData<CarEntity>> findAll(PgPool client, Map<String, String> filters, String search,
             Map<String, String> sorts,
             int limit,
@@ -53,12 +64,42 @@ public class CarService {
         return CarRepository.findAll(client, filters, search, sorts, limit, offset);
     }
 
+    /**
+     * Retrieves a list of CarEntity objects from the database based on the provided filters, sorts, and search criteria,
+     * and converts the list to an XML string.
+     *
+     * @param client the PgPool client used to interact with the database
+     * @param filters a map of filters to apply to the query
+     * @param sorts a map of sorting options to apply to the query
+     * @param search a search string to filter the results
+     * @return an XML string representation of the list of CarEntity objects
+     */
     public String getXml(PgPool client, Map<String, String> filters, Map<String, String> sorts, String search) {
         Uni<TotalRowsAndData<CarEntity>> result = CarRepository.findAll(client, filters, search, sorts, 0, 0);
-        List<CarEntity> carList = result.onItem().transform(TotalRowsAndData::getData).await().indefinitely();
-        return convertToXml(carList);
+        return result.onItem().transform(totalRowsAndData -> {
+            List<CarEntity> carList = totalRowsAndData.getData();
+            return convertToXml(carList);
+        }).await().indefinitely();
     }
 
+    /**
+     * Fills missing data for cars by fetching car information from an external AI service and updating the database.
+     *
+     * @param client the PgPool client used for database operations
+     * @return a GenericResponse indicating the success of the operation
+     *
+     * This method performs the following steps:
+     * 1. Initializes filters and pagination parameters.
+     * 2. Iterates through pages of car data.
+     * 3. Fetches car data from the repository based on filters and pagination.
+     * 4. Concatenates car data into a single string.
+     * 5. Sends the concatenated data to an AI service to get additional car information.
+     * 6. Parses the response from the AI service.
+     * 7. Updates the car information in the database.
+     * 8. Logs the results of the operations.
+     *
+     * If any JSON processing errors occur, they are logged.
+     */
     public GenericResponse<String> fillMissingData(PgPool client) {
 
         Map<String, String> filters = new HashMap<>();
@@ -117,6 +158,13 @@ public class CarService {
                 "Missing data filled successfully");
     }
 
+    /**
+     * Fetches UI parameters from the database using the provided PgPool client.
+     * The parameters include makers, makers and models, transmissions, colors, fuel types, and body types.
+     * 
+     * @param client the PgPool client used to interact with the database
+     * @return a Uni containing a GenericResponse with a map of UI parameters and a success message
+     */
     public Uni<GenericResponse<Map<String, Object>>> getUiParams(PgPool client) {
         Map<String, Uni<?>> uniMap = new HashMap<>();
 
@@ -140,6 +188,17 @@ public class CarService {
                 });
     }
 
+    /**
+     * Fetches the image URLs for a car based on its ID.
+     *
+     * This method retrieves a car entity from the database using the provided client and ID.
+     * If the car is found, it checks for existing image URLs. If URLs are present, it returns them.
+     * If no URLs are found, it generates image URLs based on the car's details and updates the database.
+     *
+     * @param client the database client used to fetch the car entity
+     * @param id the ID of the car to fetch the image URLs for
+     * @return a Uni containing a GenericResponse with a map of color to image URL and a status message
+     */
     public Uni<GenericResponse<Map<String, String>>> getImage(PgPool client, Long id) {
         Uni<CarEntity> carUni = CarRepository.getById(client, id);
         return carUni.onItem().transformToUni(car -> {
@@ -187,12 +246,29 @@ public class CarService {
         });
     }
 
+    /**
+     * Fetches the image URL based on the provided keyword.
+     *
+     * This method performs the following steps:
+     * 1. Encodes the provided keyword.
+     * 2. Fetches the search URL using the encoded keyword.
+     * 3. Fetches the image URL from the search URL.
+     *
+     * @param keyword the keyword to search for an image.
+     * @return a Uni containing the image URL as a String.
+     */
     private Uni<String> fetchImageUrl(String keyword) {
         return Uni.createFrom().item(() -> encodeKeyword(keyword))
                 .onItem().transformToUni(this::fetchSearchUrl)
                 .onItem().transformToUni(this::fetchImageFromUrl);
     }
 
+    /**
+     * Encodes the given keyword for use in a URL and constructs a Google Image search URL.
+     *
+     * @param keyword the keyword to be encoded and used in the search URL
+     * @return the constructed Google Image search URL with the encoded keyword, or null if encoding fails
+     */
     private String encodeKeyword(String keyword) {
         try {
             String encodedKeyword = java.net.URLEncoder.encode(keyword, "UTF-8");
@@ -205,6 +281,12 @@ public class CarService {
         }
     }
 
+    /**
+     * Fetches the content of the given search URL asynchronously.
+     *
+     * @param searchUrl the URL to fetch content from. If null, a Uni containing a null item is returned.
+     * @return a Uni that emits the content of the URL as a String, or null if an error occurs.
+     */
     private Uni<String> fetchSearchUrl(String searchUrl) {
         if (searchUrl == null) {
             return Uni.createFrom().nullItem();
@@ -232,6 +314,12 @@ public class CarService {
         });
     }
 
+    /**
+     * Fetches the URL of the first image from the given HTML response body.
+     *
+     * @param responseBody the HTML response body as a String
+     * @return a Uni containing the URL of the first image if found, or an empty string if no image is found or if the response body is null
+     */
     private Uni<String> fetchImageFromUrl(String responseBody) {
         if (responseBody == null) {
             return Uni.createFrom().nullItem();
@@ -245,6 +333,12 @@ public class CarService {
         return Uni.createFrom().item(firstImage != null ? firstImage.attr("src") : "");
     }
 
+    /**
+     * Converts a list of CarEntity objects to an XML string representation.
+     *
+     * @param cars the list of CarEntity objects to be converted to XML
+     * @return a string containing the XML representation of the list of cars
+     */
     private String convertToXml(List<CarEntity> cars) {
         StringBuilder xmlBuilder = new StringBuilder();
         xmlBuilder.append("<cars>");

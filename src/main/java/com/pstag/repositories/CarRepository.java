@@ -403,7 +403,7 @@ public class CarRepository {
      * Handles the default filter for the given query builder based on the provided key and value.
      * 
      * @param queryBuilder the SQL query builder to which the filter will be applied
-     * @param snakeCaseKey the key in snake_case format to be used in the filter
+     * @param fieldName the key in snake_case format to be used in the filter
      * @param originalValue the original value to be parsed and used in the filter
      * 
      * If the original value is not null, it parses the value using CarEntity.parse method and determines
@@ -412,11 +412,15 @@ public class CarRepository {
      * Otherwise, it constructs a standard SQL condition using the key, operator, and parsed value.
      * If the original value is null, it adds a condition to check if the key's value is NULL.
      */
-    private static void handleDefaultFilter(SqlQueryBuilder queryBuilder, String snakeCaseKey, String originalValue) {
+    private static void handleDefaultFilter(SqlQueryBuilder queryBuilder, String fieldName, String originalValue) {
+        if (!CarEntity.getFields().contains(fieldName)) {
+            return;
+        }                
+
         if (originalValue != null) {
-            Object value = CarEntity.parse(snakeCaseKey, originalValue);
+            Object value = CarEntity.parse(fieldName, originalValue);
             String operator = (value instanceof String) ? "ILIKE" : "=";
-            if (snakeCaseKey.equals("color")) {
+            if (fieldName.equals("color")) {
                 if (value instanceof List<?>) {
                     List<String> stringList = ((List<?>) value).stream()
                             .filter(String.class::isInstance)
@@ -424,13 +428,13 @@ public class CarRepository {
                             .map(s -> "'" + s + "'")
                             .toList();
                     queryBuilder.where(
-                            String.format("%s && ARRAY[%s]::VARCHAR[]", snakeCaseKey, String.join(",", stringList)));
+                            String.format("%s && ARRAY[%s]::VARCHAR[]", fieldName, String.join(",", stringList)));
                 }
             } else {
-                queryBuilder.where(String.format("%s %s $ ", snakeCaseKey, operator), value);
+                queryBuilder.where(String.format("%s %s $ ", fieldName, operator), value);
             }
         } else {
-            queryBuilder.where(String.format("%s IS NULL", snakeCaseKey));
+            queryBuilder.where(String.format("%s IS NULL", fieldName));
         }
     }
 
