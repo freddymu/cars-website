@@ -59,4 +59,27 @@ class CarControllerTest {
                 .contentType("application/xml")
                 .body(containsString("<bodyType>Sedan</bodyType>"));
     }
+
+    @Test
+    void testGetImageEndpoint() {
+        Long imageId = 14424L; // Assuming 1L is a valid image ID for testing
+        given()
+                .pathParam("id", imageId)
+                .when().get("/api/cars/image/{id}")
+                .then()
+                .statusCode(200)
+                .contentType("application/json")
+                .body("data.size()", is(6));
+    }
+
+    @Test
+    void testGetImageEndpointNotFound() {
+        Long invalidImageId = 9999999L; // Assuming 9999999L is an invalid image ID for testing
+        given()
+                .pathParam("id", invalidImageId)
+                .when().get("/api/cars/image/{id}")
+                .then()
+                .body("message", containsString("Car not found"));
+                //.statusCode(404);
+    }
 }
