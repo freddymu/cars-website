@@ -50,14 +50,14 @@ public class CarService {
 
     private final BlobServiceAsyncClient blobServiceAsyncClient;
 
-    private final String connectionString;
+    private final String useAzureBlob;
 
     @Inject
     public CarService(MyAiService aiService, BlobServiceAsyncClient blobServiceAsyncClient) {
         this.aiService = aiService;
         this.blobServiceAsyncClient = blobServiceAsyncClient;
 
-        connectionString = ConfigProvider.getConfig().getValue("quarkus.azure.storage.blob.connection-string",
+        useAzureBlob = ConfigProvider.getConfig().getValue("quarkus.azure.storage.blob.enabled",
                 String.class);
     }
 
@@ -386,7 +386,7 @@ public class CarService {
 
         String imageUrl = "";
 
-        if (firstImage == null && connectionString != null) {
+        if (firstImage == null && useAzureBlob.equalsIgnoreCase("true")) {
             String regex = "'data:image/jpeg;base64,([^']+)";
 
             java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(regex);
