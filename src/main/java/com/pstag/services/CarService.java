@@ -343,9 +343,8 @@ public class CarService {
         }
 
         String[] userAgents = {
-                // "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like
-                // Gecko) Chrome/58.0.3029.110 Safari/537.3",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0"
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, likeGecko) Chrome/58.0.3029.110 Safari/537.3",
+                // "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0"
         };
         String userAgent = userAgents[new java.util.Random().nextInt(userAgents.length)];
 
@@ -397,24 +396,15 @@ public class CarService {
                 String cleanedBase64 = base64.replaceAll("\\\\x[0-9a-fA-F]{2}", "");
                 if (cleanedBase64.length() >= 5000) {
                     byte[] bytes = java.util.Base64.getDecoder().decode(cleanedBase64);
-                    // try {
-                    // java.io.File file = java.io.File.createTempFile("image", ".jpg");
-                    // Log.info(file.toPath());
-                    // Log.info(file.toURI().toString());
-                    // java.nio.file.Files.write(file.toPath(), bytes);
 
                     Mono<String> blobUrl = blobServiceAsyncClient
                             .createBlobContainerIfNotExists("dev")
                             .map(it -> it.getBlobAsyncClient("images/" + java.util.UUID.randomUUID() + ".jpg"))
-                            // .flatMap(it -> it.upload(BinaryData.fromBytes(bytes), true))
                             .flatMap(blobAsyncClient -> blobAsyncClient.upload(BinaryData.fromBytes(bytes), true)
                                     .map(blockBlobItem -> blobAsyncClient.getBlobUrl()));
 
                     imageUrl = Uni.createFrom().completionStage(blobUrl.toFuture()).await().indefinitely();
 
-                    // } catch (java.io.IOException e) {
-                    // Log.error("Error writing image to file", e);
-                    // }
                     // only fetch one image per color to saving cost on storage
                     break;
                 }

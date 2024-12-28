@@ -120,30 +120,42 @@ $(document).ready(function () {
           "bg-white p-4 rounded shadow"
         );
 
-        if (!car.imageUrl || (Array.isArray(car.imageUrl) && car.imageUrl.length === 0)) {
-          const response = await fetch(`/api/cars/image/${car.id}`);
-          const json = await response.json();
-          car.imageUrl = json.data;
-        }
+        const imageUrls = car.imageUrl ?? [];
 
-        const shuffledUrls = Object.entries(car.imageUrl).sort(
+        const shuffledUrls = Object.entries(imageUrls).sort(
           () => 0.5 - Math.random()
         );
+
+        let carouselItems = "";
+
+        if (shuffledUrls.length !== 0) {
+          carouselItems = shuffledUrls
+            .map(
+              ([color, url]) => `
+        <div class="carousel-item">
+            <img src="${url}" alt="${car.trimYear} ${car.make} ${car.model} ${car.trimName}" class="w-full h-32 object-cover mb-2 rounded">
+        </div>
+        `
+            )
+            .join("");
+        } else {
+          carouselItems = `
+            <div class="carousel-item h-32 w-full flex justify-center items-center text-center">
+              <div class="h-full flex justify-center items-center gap-2">  
+                <i class="fas fa-spinner fa-spin text-4xl text-gray-500"></i>
+                <span class="text-xs text-gray-500">Loading images...</span>
+              </div>
+            </div>
+            `;
+        }
+
         carCard.html(`                    
             <div class="relative">
-                <div class="carousel">
-                ${shuffledUrls
-                  .map(
-                    ([color, url]) => `
-                <div class="carousel-item">
-                    <img src="${url}" alt="${car.trimYear} ${car.make} ${car.model} ${car.trimName}" class="w-full h-32 object-cover mb-2 rounded">
+                <div class="carousel" data-id="${car.id}">
+                ${carouselItems}
                 </div>
-                `
-                  )
-                  .join("")}
-                </div>
-                <button class="prev absolute top-1/2 left-0 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full">&#10094;</button>
-                <button class="next absolute top-1/2 right-0 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full">&#10095;</button>
+                <button data-id="${car.id}prevBtn" class="prev absolute top-1/2 left-0 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full">&#10094;</button>
+                <button data-id="${car.id}nextBtn" class="next absolute top-1/2 right-0 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full">&#10095;</button>
             </div>
             <h2 class="text-base font-semibold">${car.trimYear} ${car.make} ${
           car.model
@@ -184,6 +196,50 @@ $(document).ready(function () {
             }
             `);
         carList.append(carCard);
+
+        if (
+          !car.imageUrl ||
+          (Array.isArray(car.imageUrl) && car.imageUrl.length === 0)
+        ) {
+          fetch(`/api/cars/image/${car.id}`)
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("Network response was not ok");
+              }
+              return response.json();
+            })
+            .then((response) => {
+                const shuffledUrls = Object.entries(response.data)
+                .filter(([_, url]) => url !== "")
+                .sort(() => 0.5 - Math.random());
+
+              const carousel = $(`.carousel[data-id="${car.id}"]`);
+
+              if (shuffledUrls.length === 0) {
+                $(`button[data-id="${car.id}prevBtn"]`).hide();
+                $(`button[data-id="${car.id}nextBtn"]`).hide();
+  
+                carousel.html(
+                  `<div class="carousel-item h-32 w-full flex justify-center items-center text-center">
+                    <div class="h-full flex justify-center items-center gap-2">
+                      <span class="text-xs text-red-500">
+                        Failed to load images from Google Search!
+                      </span>
+                    </div>
+                  </div>`
+                );
+                return;
+              }
+              carousel.html(
+                shuffledUrls.map(
+                  ([key, value]) =>
+                    `<div class="carousel-item">
+                      <img src="${value}" alt="${car.trimYear} ${car.make} ${car.model} ${car.trimName}" class="w-full h-32 object-cover mb-2 rounded"></img>
+                    </div>`
+                )
+              );
+            });
+        }
       });
     }
 
@@ -265,7 +321,6 @@ $(document).ready(function () {
   function initFilterParams() {
     const url = new URL(window.location);
     const searchParams = new URLSearchParams(url.search);
-    const params = {};
 
     searchParams.forEach((value, key) => {
       if (key === "search") {
@@ -311,7 +366,6 @@ $(document).ready(function () {
 
   // Apply filters
   function applyFilters(event) {
-
     const triggerById = event?.target?.id;
 
     if (triggerById === "make") {
